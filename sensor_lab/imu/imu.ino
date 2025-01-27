@@ -5,97 +5,27 @@
 Adafruit_MPU6050 mpu;
 
 const int flex = A10;
-const int trigPin = 41;
-const int echoPin = 39;
+const int trigger_out = 41;
+const int echo_in = 39;
 
-float duration, distance;
+float time_since_trigger, distance;
+int value;
 
 void setup(void) {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(flex, INPUT);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  while (!Serial)
-    delay(10); 
-
-  if (!mpu.begin()) {
-    Serial.println("Failed to find MPU6050 chip");
-    while (1) {
-      delay(10);
-    }
-  }
-  Serial.println("MPU6050 Found!");
-
+  pinMode(trigger_out, OUTPUT);
+  pinMode(echo_in, INPUT);
+  mpu.begin();
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
-  Serial.print("Accelerometer range set to: ");
-  switch (mpu.getAccelerometerRange()) {
-  case MPU6050_RANGE_2_G:
-    Serial.println("+-2G");
-    break;
-  case MPU6050_RANGE_4_G:
-    Serial.println("+-4G");
-    break;
-  case MPU6050_RANGE_8_G:
-    Serial.println("+-8G");
-    break;
-  case MPU6050_RANGE_16_G:
-    Serial.println("+-16G");
-    break;
-  }
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-  Serial.print("Gyro range set to: ");
-  switch (mpu.getGyroRange()) {
-  case MPU6050_RANGE_250_DEG:
-    Serial.println("+- 250 deg/s");
-    break;
-  case MPU6050_RANGE_500_DEG:
-    Serial.println("+- 500 deg/s");
-    break;
-  case MPU6050_RANGE_1000_DEG:
-    Serial.println("+- 1000 deg/s");
-    break;
-  case MPU6050_RANGE_2000_DEG:
-    Serial.println("+- 2000 deg/s");
-    break;
-  }
-
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
-  Serial.print("Filter bandwidth set to: ");
-  switch (mpu.getFilterBandwidth()) {
-  case MPU6050_BAND_260_HZ:
-    Serial.println("260 Hz");
-    break;
-  case MPU6050_BAND_184_HZ:
-    Serial.println("184 Hz");
-    break;
-  case MPU6050_BAND_94_HZ:
-    Serial.println("94 Hz");
-    break;
-  case MPU6050_BAND_44_HZ:
-    Serial.println("44 Hz");
-    break;
-  case MPU6050_BAND_21_HZ:
-    Serial.println("21 Hz");
-    break;
-  case MPU6050_BAND_10_HZ:
-    Serial.println("10 Hz");
-    break;
-  case MPU6050_BAND_5_HZ:
-    Serial.println("5 Hz");
-    break;
-  }
-
-  Serial.println("");
-  delay(100);
 }
 
 void loop() {
-
-  /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  /* Print out the values */
   Serial.print("Acceleration X: ");
   Serial.print(a.acceleration.x);
   Serial.print(", Y: ");
@@ -116,25 +46,25 @@ void loop() {
   Serial.print(temp.temperature);
   Serial.println(" degC");
 
-  Serial.println("");
-  delay(500);
-
   value = analogRead (flex);
-  Serial.println("");
-  Serial.println(value);
-  value = map(value, 92, 342, 0, 1000);
-  Serial.println("");
+  value = map(value, 681, 929, 0, 100);
+  Serial.print("Flex: ");
   Serial.println(value);
 
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trigger_out, LOW);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigger_out, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_out, LOW);
 
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration*.0343)/2;
+  time_since_trigger = pulseIn(echo_in, HIGH);
+  // speed of sound --> 343 m/s --> 0.0343 cm/s
+  const float speed_of_sound_cm_s = 0.0343;
+  // distance sound travels is (duration * 0.0343/s) / 2
+  distance = (time_since_trigger*speed_of_sound_cm_s)/2;
   Serial.print("Distance: ");
-  Serial.println(distance);
-  delay(100);
+  Serial.print(time_since_trigger);
+  Serial.println(" cm");
+  Serial.println("");
+  delay(800);
 }
