@@ -58,12 +58,12 @@ void loop() {
   digitalWrite(trigger_out, LOW);
 
   time_since_trigger = pulseIn(echo_in, HIGH);
-  // speed of sound --> 343 m/s --> 0.0343 cm/s
+  // speed of sound --> 343 m/s --> 0.0343 cm/us
   const float speed_of_sound_cm_s = 0.0343;
-  // distance sound travels is (duration * 0.0343/s) / 2
+  // distance sound travels is (duration * 0.0343/us) / 2
   distance = (time_since_trigger*speed_of_sound_cm_s)/2;
   Serial.print("Distance: ");
-  Serial.print(time_since_trigger);
+  Serial.print(distance);
   Serial.println(" cm");
   Serial.println("");
   delay(800);
