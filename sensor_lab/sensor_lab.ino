@@ -28,7 +28,7 @@ void ultrasonic () {
 }
 
 void flex() {
-  value = analogRead(flex);
+  value = analogRead(flex_pin);
   value = map(value, 681, 929, 0, 100);
 }
 
@@ -54,10 +54,12 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
       Serial.print("Temperature: ");
       Serial.print(temp.temperature);
       Serial.println(" degC");
+      Serial.println("");
       break;
     case 2:
       Serial.print("Flex: ");
       Serial.println(value);
+      Serial.println("");
       break;
     case 3: 
       Serial.print("Distance: ");
