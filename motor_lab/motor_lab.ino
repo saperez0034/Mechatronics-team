@@ -1,12 +1,15 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
+#include <Servo.h>
 
 Adafruit_MPU6050 mpu;
+Servo pwmServo;
 
 const int flex_pin = A10;
 const int trigger_out = 41;
 const int echo_in = 39;
+const int servo_pwm = 9;
 
 float time_since_trigger, distance;
 int value;
@@ -74,6 +77,12 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
   }
 }
 
+void servoControl() {
+  int angle = map(distance, 5, 25, 0, 180);
+  angle = constrain(angle, 0, 180);
+  pwmServo.write(angle);
+}
+
 void setup(void) {
   Serial.begin(9600);
   pinMode(flex_pin, INPUT);
@@ -84,6 +93,7 @@ void setup(void) {
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
   Serial.println("Welcome!");
+  pwmServo.attach(servo_pwm);
 }
 
 void loop() {
@@ -97,5 +107,6 @@ void loop() {
   flex();
   ultrasonic();
   ui(a, g, temp);
+  servoControl();
   delay(800);
 }
