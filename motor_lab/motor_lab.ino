@@ -9,12 +9,26 @@ Servo pwmServo;
 const int flex_pin = A10;
 const int trigger_out = 41;
 const int echo_in = 39;
+const int encoderA = 26; // yellow
+const int encoderB = 27; // white
+const int motor_pin_en = ;
+const int motor_pin_A = ;
+const int motor_pin_B = ;
 const int servo_pwm = 9;
 
 float time_since_trigger, distance;
 int value;
 
 int ui_var = 0;
+
+// motor stuff
+float time_since_last_pid_calculation = 0;
+int curr_position = 0;
+int target_position = 0;
+float last_error, error_sum, error_diff, error = 0;
+float p = 0;
+float i = 0;
+float d = 0;
 
 void ultrasonic () {
   digitalWrite(trigger_out, LOW);
@@ -77,6 +91,47 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
   }
 }
 
+void encoder(void) {
+  // based on the waveform i saw on google
+  if (digitalRead(encoderA) == digitalRead(encoderB)) {
+    curr_position--;
+  }
+  else {
+    curr_position++;
+  }
+}
+
+void pid_calculations(void) {
+  // position pid controller
+  float current_time = millis();
+  float time = (current_time - time_since_last_pid_calculation) / 1000;
+  float current_error = target_position - curr_position;
+  error_sum += current_error * time;
+  error_diff = (last_error - current_error) / time;
+
+  error = (p * current_error) + (i * error_sum) + (d * error_diff);
+
+  // update
+  time_since_last_pid_calculation = current_time;
+  last_error = current_error;
+
+  set_motor();
+}
+
+void set_motor(void) {
+  // get output of pid as a percentage
+  int duty_cycle = error / 1200 * 255;
+  if (duty_cycle > 255) {
+    duty_cycle = 255;
+  }
+  elif (duty_cycle < 0) {
+    duty_cycle = 0;
+  }
+  analogWrite(motor_pin_en, duty_cycle);
+  digitalWrite(motor_pin_A, HIGH);
+  digitalWrite(motor_pin_B, LOW);
+}
+
 void servoControl() {
   int angle = map(distance, 5, 25, 0, 180);
   angle = constrain(angle, 0, 180);
@@ -93,6 +148,19 @@ void setup(void) {
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
   Serial.println("Welcome!");
+
+  // encoder shenanigans
+  pinMode(encoderA, INPUT); 
+  pinMode(encoderB, INPUT); 
+  attachInterrupt(digitalPinToInterrupt(encoderA), encoder, CHANGE);  
+
+  // set target
+  target_position = 500;
+
+  // motor shenanigans
+  pinMode(motor_pin_en, OUTPUT);
+  pinMode(motor_pin_A, OUTPUT);
+  pinMode(motor_pin_B, OUTPUT);
   pwmServo.attach(servo_pwm);
 }
 
@@ -109,4 +177,6 @@ void loop() {
   ui(a, g, temp);
   servoControl();
   delay(800);
+
+  pid_calculations();
 }
