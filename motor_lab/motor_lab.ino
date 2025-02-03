@@ -9,11 +9,11 @@ Servo pwmServo;
 const int flex_pin = A10;
 const int trigger_out = 41;
 const int echo_in = 39;
-const int encoderA = 26; // yellow
-const int encoderB = 27; // white
-const int motor_pin_en = ;
-const int motor_pin_A = ;
-const int motor_pin_B = ;
+const int encoderA = 21; // yellow
+const int encoderB = 20; // white
+const int motor_pin_en = 35;
+const int motor_pin_A = 31;
+const int motor_pin_B = 33;
 const int servo_pwm = 9;
 
 float time_since_trigger, distance;
@@ -23,12 +23,13 @@ int ui_var = 0;
 
 // motor stuff
 float time_since_last_pid_calculation = 0;
-int curr_position = 0;
-int target_position = 0;
+volatile int encoderA_last = LOW;
+volatile int curr_position = 0;
+volatile int target_position = 0;
 float last_error, error_sum, error_diff, error = 0;
-float p = 0;
-float i = 0;
-float d = 0;
+float p = 0.1;
+float i = 0.1;
+float d = 0.1;
 
 void ultrasonic () {
   digitalWrite(trigger_out, LOW);
@@ -85,19 +86,25 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
       Serial.println("");
       break;
     default:
-      Serial.println("Please type in 1 to read values from IMU, 2 to read values from flex sensor, and 3 to read values from the ultrasonic sensor");
+      // Serial.println("Please type in 1 to read values from IMU, 2 to read values from flex sensor, and 3 to read values from the ultrasonic sensor");
       break;
     Serial.println("");
   }
 }
 
-void encoder(void) {
-  // based on the waveform i saw on google
+void encoderA_ISR() {
   if (digitalRead(encoderA) == digitalRead(encoderB)) {
     curr_position--;
-  }
-  else {
+  } else {
     curr_position++;
+  }
+}
+
+void encoderB_ISR() {
+  if (digitalRead(encoderA) == digitalRead(encoderB)) {
+    curr_position++;
+  } else {
+    curr_position--;
   }
 }
 
@@ -108,13 +115,16 @@ void pid_calculations(void) {
   float current_error = target_position - curr_position;
   error_sum += current_error * time;
   error_diff = (last_error - current_error) / time;
+  // Serial.println(current_error);
+  // Serial.println(error_sum);
+  // Serial.println(error_diff);
+
 
   error = (p * current_error) + (i * error_sum) + (d * error_diff);
 
   // update
   time_since_last_pid_calculation = current_time;
   last_error = current_error;
-
   set_motor();
 }
 
@@ -124,8 +134,8 @@ void set_motor(void) {
   if (duty_cycle > 255) {
     duty_cycle = 255;
   }
-  elif (duty_cycle < 0) {
-    duty_cycle = 0;
+  else if (duty_cycle < 100) {
+    duty_cycle = 100;
   }
   analogWrite(motor_pin_en, duty_cycle);
   digitalWrite(motor_pin_A, HIGH);
@@ -152,7 +162,8 @@ void setup(void) {
   // encoder shenanigans
   pinMode(encoderA, INPUT); 
   pinMode(encoderB, INPUT); 
-  attachInterrupt(digitalPinToInterrupt(encoderA), encoder, CHANGE);  
+  attachInterrupt(digitalPinToInterrupt(encoderA), encoderA_ISR, CHANGE);  
+  attachInterrupt(digitalPinToInterrupt(encoderB), encoderB_ISR, CHANGE);   
 
   // set target
   target_position = 500;
@@ -176,7 +187,7 @@ void loop() {
   ultrasonic();
   ui(a, g, temp);
   servoControl();
-  delay(800);
 
-  pid_calculations();
+  // pid_calculations();
+  delay(800);
 }
