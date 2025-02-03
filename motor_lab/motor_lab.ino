@@ -7,11 +7,11 @@ Adafruit_MPU6050 mpu;
 const int flex_pin = A10;
 const int trigger_out = 41;
 const int echo_in = 39;
-const int encoderA = 26; // yellow
-const int encoderB = 27; // white
-const int motor_pin_en = ;
-const int motor_pin_A = ;
-const int motor_pin_B = ;
+const int encoderA = 2; // yellow
+const int encoderB = 3; // white
+const int motor_pin_en = 35;
+const int motor_pin_A = 31;
+const int motor_pin_B = 33;
 
 float time_since_trigger, distance;
 int value;
@@ -19,13 +19,15 @@ int value;
 int ui_var = 0;
 
 // motor stuff
+int duty_cycle = 0;
 float time_since_last_pid_calculation = 0;
-int curr_position = 0;
+volatile int curr_position = 0;
 int target_position = 0;
 float last_error, error_sum, error_diff, error = 0;
-float p = 0;
-float i = 0;
-float d = 0;
+float p = 0.1;
+float i = 0.1;
+float d = 0.1;
+uint8_t prev_state = 0b00;
 
 void ultrasonic () {
   digitalWrite(trigger_out, LOW);
@@ -82,7 +84,7 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
       Serial.println("");
       break;
     default:
-      Serial.println("Please type in 1 to read values from IMU, 2 to read values from flex sensor, and 3 to read values from the ultrasonic sensor");
+//      Serial.println("Please type in 1 to read values from IMU, 2 to read values from flex sensor, and 3 to read values from the ultrasonic sensor");
       break;
     Serial.println("");
   }
@@ -90,39 +92,72 @@ void ui(sensors_event_t a, sensors_event_t g, sensors_event_t temp){
 
 void encoder(void) {
   // based on the waveform i saw on google
-  if (digitalRead(encoderA) == digitalRead(encoderB)) {
-    curr_position--;
+  // if (digitalRead(encoderB) == HIGH) {
+  //   curr_position++;
+  // }
+  // else {
+  //   curr_position--;
+  // }
+  uint8_t stateA = digitalRead(encoderA);
+  uint8_t stateB = digitalRead(encoderB);
+  uint8_t state = (stateB << 1) | stateA;
+  if ((prev_state == 0b00 && state == 0b01) ||
+      (prev_state == 0b01 && state == 0b11) ||
+      (prev_state == 0b11 && state == 0b10) ||
+      (prev_state == 0b10 && state == 0b00)) {
+      curr_position++;  // Clockwise
+  } else if ((prev_state == 0b00 && state == 0b10) ||
+              (prev_state == 0b10 && state == 0b11) ||
+              (prev_state == 0b11 && state == 0b01) ||
+              (prev_state == 0b01 && state == 0b00)) {
+      curr_position++;  // Counterclockwise
   }
-  else {
-    curr_position++;
-  }
+
+  curr_position = curr_position % 700;
+
+  prev_state = state;  // Update last state
+//  Serial.println(curr_position);
 }
 
 void pid_calculations(void) {
   // position pid controller
-  float current_time = millis();
-  float time = (current_time - time_since_last_pid_calculation) / 1000;
-  float current_error = target_position - curr_position;
-  error_sum += current_error * time;
-  error_diff = (last_error - current_error) / time;
+  noInterrupts();  // Disable interrupts
+  int position = curr_position;  // Copy the position to a local variable
+  interrupts();  // Re-enable interrupts
+  Serial.println(position);
 
-  error = (p * current_error) + (i * error_sum) + (d * error_diff);
+  if (abs(target_position - position) <= 0.1*target_position) {
+    Serial.println("here");
+    analogWrite(motor_pin_en, 0);
+    digitalWrite(motor_pin_A, LOW);
+    digitalWrite(motor_pin_B, LOW);
+  }
+  else {
+    float current_time = millis();
+    float time = (current_time - time_since_last_pid_calculation) / 1000;
+    float current_error = target_position - position;
+    error_sum += current_error * time;
+    error_diff = (last_error - current_error) / time;
 
-  // update
-  time_since_last_pid_calculation = current_time;
-  last_error = current_error;
+    error = (p * current_error) + (i * error_sum) + (d * error_diff);
 
-  set_motor();
+    // update
+    time_since_last_pid_calculation = current_time;
+    last_error = current_error;
+
+    set_motor();
+  }
+  
 }
 
 void set_motor(void) {
   // get output of pid as a percentage
-  int duty_cycle = error / 1200 * 255;
+  duty_cycle = error / 700 * 255;
   if (duty_cycle > 255) {
     duty_cycle = 255;
   }
-  elif (duty_cycle < 0) {
-    duty_cycle = 0;
+  else if (duty_cycle < 175) {
+    duty_cycle = 175;
   }
   analogWrite(motor_pin_en, duty_cycle);
   digitalWrite(motor_pin_A, HIGH);
@@ -143,10 +178,14 @@ void setup(void) {
   // encoder shenanigans
   pinMode(encoderA, INPUT); 
   pinMode(encoderB, INPUT); 
+
+  prev_state = (digitalRead(encoderA) << 1) | digitalRead(encoderB);
   attachInterrupt(digitalPinToInterrupt(encoderA), encoder, CHANGE);  
+  attachInterrupt(digitalPinToInterrupt(encoderB), encoder, CHANGE);  
+
 
   // set target
-  target_position = 500;
+  target_position = 200;
 
   // motor shenanigans
   pinMode(motor_pin_en, OUTPUT);
@@ -155,17 +194,16 @@ void setup(void) {
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    ui_var = Serial.parseInt();
-  }
+//  if (Serial.available() > 0) {
+//    ui_var = Serial.parseInt();
+//  }
 
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+//  sensors_event_t a, g, temp;
+//  mpu.getEvent(&a, &g, &temp);
 
-  flex();
-  ultrasonic();
-  ui(a, g, temp);
-  delay(800);
-
-  pid_calculations();
+//  flex();
+//  ultrasonic();
+//  ui(a, g, temp);
+//  delay(800);
+  // pid_calculations();
 }
