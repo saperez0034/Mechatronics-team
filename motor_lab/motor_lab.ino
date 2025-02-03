@@ -1,12 +1,16 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
+#include <Stepper.h>
 
 Adafruit_MPU6050 mpu;
 
 const int flex_pin = A10;
 const int trigger_out = 41;
 const int echo_in = 39;
+
+const int stepsPerRevolution = 2038;
+Stepper myStepper = Stepper(stepsPerRevolution, 43, 45, 47, 49);
 
 float time_since_trigger, distance;
 int value;
@@ -83,6 +87,7 @@ void setup(void) {
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  myStepper.setSpeed(30);
   Serial.println("Welcome!");
 }
 
@@ -97,5 +102,15 @@ void loop() {
   flex();
   ultrasonic();
   ui(a, g, temp);
+
+  // myStepper.step(1);
+  // Serial.print("steps:");
+  // Serial.println(stepCount);
+  // stepCount++;
+	
+	// Rotate CCW quickly at 10 RPM
+	myStepper.setSpeed(11);
+	myStepper.step(-stepsPerRevolution);
+	delay(1000);
   delay(800);
 }
