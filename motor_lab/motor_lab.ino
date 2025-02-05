@@ -3,6 +3,11 @@
 #include <Wire.h>
 
 Adafruit_MPU6050 mpu;
+#define MAX_MOTOR_SPEED 3600
+/** @brief min motor speed */
+#define MIN_MOTOR_SPEED 800
+
+#define TICKS_PER_REV 2000
 
 const int flex_pin = A10;
 const int trigger_out = 41;
@@ -12,7 +17,6 @@ const int encoderB = 3; // white
 const int motor_pin_en = 35;
 const int motor_pin_A = 31;
 const int motor_pin_B = 33;
-const int TICKS_PER_REV = 2000;
 
 float time_since_trigger, distance;
 int value;
@@ -153,48 +157,81 @@ void encoder(void) {
 //  Serial.println(curr_position);
 }
 
+/** @brief prev error global variable */
+static int32_t error_prev = 0;
+/** @brief cumulative error */
+static int32_t integral = 0;
+
 void pid_calculations(void) {
-  // position pid controller
-  noInterrupts();  // Disable interrupts
-  int position = curr_position;  // Copy the position to a local variable
-  interrupts();  // Re-enable interrupts
-  Serial.println(position);
+  int32_t position = curr_position;  // Current position
+  int32_t error = target_position - position;  // Current error
 
-  if (abs(target_position - position) <= 0.1*target_position) {
-    Serial.println("here");
-    analogWrite(motor_pin_en, 0);
-    digitalWrite(motor_pin_A, LOW);
-    digitalWrite(motor_pin_B, LOW);
+  // Calculate shortest path to target
+  if (error > TICKS_PER_REV/2) {
+      error -= TICKS_PER_REV;
+  } else if (error < -(TICKS_PER_REV/2)) {
+      error += TICKS_PER_REV;
   }
-  else {
-    float current_time = millis();
-    float time = (current_time - time_since_last_pid_calculation) / 1000;
-    float current_error = target_position - position;
-    error_sum += current_error * time;
-    error_diff = (current_error - last_error) / time;
 
-    error = (p * current_error) + (i * error_sum) + (d * error_diff);
-
-    // update
-    time_since_last_pid_calculation = current_time;
-    last_error = current_error;
-
-    set_motor();
+  // Calculate PID control
+  int32_t derivative = error - error_prev;  // Derivative of error
+  integral += error;  // Integral of error
+  float output = p * error + i * integral + d * derivative;
+  // Limit motor speed
+  if (output > MAX_MOTOR_SPEED) {
+      output = MAX_MOTOR_SPEED;
+  } else if (output < MIN_MOTOR_SPEED) {
+      output = MIN_MOTOR_SPEED;
   }
+
+  // Set motor direction
+  encoder_state dir;
+  switch (state)
+  {
+      case FORWARD:
+          if (error <= 30 && error >= -30) dir = STOP;
+          else dir = FORWARD;
+          break;
+      case BACKWARD:
+          if (error <= 30 && error >= -30) dir = STOP;
+          else dir = BACKWARD;
+          break;
+      case FREE:
+      case STOP:
+          if (error <= 30 && error >= -30) dir = STOP;
+          else if (error < 30) dir = BACKWARD;
+          else dir = FORWARD;
+          break;
+  }
+  // encoder_state dir = (output >= 0) ? FORWARD : BACKWARD;
+  motor_set_dir(output, dir, MOTOR_TIMER, MOTOR_CHANNEL);
+
+  error_prev = error;  // Update previous error
 }
 
-void set_motor(void) {
+void set_motor(uint32_t duty_cycle, uint32_t direction) {
   // get output of pid as a percentage
-  duty_cycle = error / TICKS_PER_REV * 255;
-  if (duty_cycle > 255) {
-    duty_cycle = 255;
-  }
-  else if (duty_cycle < 175) {
-    duty_cycle = 175;
-  }
   analogWrite(motor_pin_en, duty_cycle);
-  digitalWrite(motor_pin_A, HIGH);
-  digitalWrite(motor_pin_B, LOW);
+  switch (direction) {
+      case FREE:
+          digitalWrite(motor_pin_A, LOW);
+          digitalWrite(motor_pin_B, LOW);
+          break;
+      case BACKWARD:
+          digitalWrite(motor_pin_A, HIGH);
+          digitalWrite(motor_pin_B, LOW);
+          break;
+      case FORWARD:
+          digitalWrite(motor_pin_A, LOW);
+          digitalWrite(motor_pin_B, HIGH);
+          break;
+      case STOP:
+          digitalWrite(motor_pin_A, HIGH);
+          digitalWrite(motor_pin_B, HIGH);
+          break;
+      default:
+          break;
+  }
 }
 
 void setup(void) {
