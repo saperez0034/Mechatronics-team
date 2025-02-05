@@ -12,6 +12,7 @@ const int encoderB = 3; // white
 const int motor_pin_en = 35;
 const int motor_pin_A = 31;
 const int motor_pin_B = 33;
+const int TICKS_PER_REV = 2000;
 
 float time_since_trigger, distance;
 int value;
@@ -27,7 +28,8 @@ float last_error, error_sum, error_diff, error = 0;
 float p = 0.1;
 float i = 0.1;
 float d = 0.1;
-uint8_t prev_state = 0b00;
+typedef enum {FREE = 0x0, FORWARD = 0x1, BACKWARD = 0x3, STOP = 0x2} encoder_state;
+encoder_state state = FREE;
 
 void ultrasonic () {
   digitalWrite(trigger_out, LOW);
@@ -98,24 +100,56 @@ void encoder(void) {
   // else {
   //   curr_position--;
   // }
-  uint8_t stateA = digitalRead(encoderA);
-  uint8_t stateB = digitalRead(encoderB);
-  uint8_t state = (stateB << 1) | stateA;
-  if ((prev_state == 0b00 && state == 0b01) ||
-      (prev_state == 0b01 && state == 0b11) ||
-      (prev_state == 0b11 && state == 0b10) ||
-      (prev_state == 0b10 && state == 0b00)) {
-      curr_position++;  // Clockwise
-  } else if ((prev_state == 0b00 && state == 0b10) ||
-              (prev_state == 0b10 && state == 0b11) ||
-              (prev_state == 0b11 && state == 0b01) ||
-              (prev_state == 0b01 && state == 0b00)) {
-      curr_position++;  // Counterclockwise
+  uint8_t a = digitalRead(encoderA);
+  uint8_t b = digitalRead(encoderB);
+  switch (state) {
+    case FREE:
+        if (a == 1 && b == 0) {
+            curr_position++;
+            state = FORWARD;
+        } else if (a == 0 && b == 1) {
+            curr_position--;
+            state = BACKWARD;
+        }
+        break;
+    case FORWARD:
+        if (a == 1 && b == 1) {
+            curr_position++;
+            state = STOP;
+        } else if (a == 0 && b == 0) {
+            curr_position--;
+            state = FREE;
+        }
+        break;
+    case BACKWARD:
+        if (a == 1 && b == 1) {
+            curr_position--;
+            state = STOP;
+        } else if (a == 0 && b == 0) {
+            curr_position++;
+            state = FREE;
+        }
+        break;
+    case STOP:
+        if (a == 1 && b == 0) {
+            curr_position++;
+            state = FORWARD;
+        } else if (a == 0 && b == 1) {
+            curr_position--;
+            state = BACKWARD;
+        }
+        break;
+    default:
+        break;
   }
 
-  curr_position = curr_position % 700;
+  if (curr_position < 0) {
+    curr_position = TICKS_PER_REV;
+  }
+  if (curr_position > TICKS_PER_REV) {
+    curr_position = 0;
+  }
 
-  prev_state = state;  // Update last state
 //  Serial.println(curr_position);
 }
 
@@ -179,7 +213,7 @@ void setup(void) {
   pinMode(encoderA, INPUT); 
   pinMode(encoderB, INPUT); 
 
-  prev_state = (digitalRead(encoderA) << 1) | digitalRead(encoderB);
+  // prev_state = (digitalRead(encoderA) << 1) | digitalRead(encoderB);
   attachInterrupt(digitalPinToInterrupt(encoderA), encoder, CHANGE);  
   attachInterrupt(digitalPinToInterrupt(encoderB), encoder, CHANGE);  
 
