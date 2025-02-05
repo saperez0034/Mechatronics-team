@@ -204,7 +204,7 @@ void pid_calculations(void) {
           break;
   }
   // encoder_state dir = (output >= 0) ? FORWARD : BACKWARD;
-  motor_set_dir(output, dir, MOTOR_TIMER, MOTOR_CHANNEL);
+  set_motor(output, dir);
 
   error_prev = error;  // Update previous error
 }
