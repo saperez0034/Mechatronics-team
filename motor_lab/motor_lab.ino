@@ -171,7 +171,7 @@ void pid_calculations(void) {
     float time = (current_time - time_since_last_pid_calculation) / 1000;
     float current_error = target_position - position;
     error_sum += current_error * time;
-    error_diff = (last_error - current_error) / time;
+    error_diff = (current_error - last_error) / time;
 
     error = (p * current_error) + (i * error_sum) + (d * error_diff);
 
@@ -181,12 +181,11 @@ void pid_calculations(void) {
 
     set_motor();
   }
-  
 }
 
 void set_motor(void) {
   // get output of pid as a percentage
-  duty_cycle = error / 700 * 255;
+  duty_cycle = error / TICKS_PER_REV * 255;
   if (duty_cycle > 255) {
     duty_cycle = 255;
   }
