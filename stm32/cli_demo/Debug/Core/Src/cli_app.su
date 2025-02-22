@@ -1,0 +1,11 @@
+../Core/Src/cli_app.c:25:5:_write	32	static
+../Core/Src/cli_app.c:39:12:cmd_clearScreen	24	static
+../Core/Src/cli_app.c:52:12:cmd_toggle_led	48	static
+../Core/Src/cli_app.c:73:12:cmd_hello	48	static
+../Core/Src/cli_app.c:86:12:cmd_add	64	static
+../Core/Src/cli_app.c:156:6:vRegisterCLICommands	16	static
+../Core/Src/cli_app.c:164:6:cliWrite	16	static
+../Core/Src/cli_app.c:171:6:handleNewline	32	static
+../Core/Src/cli_app.c:187:6:handleBackspace	24	static
+../Core/Src/cli_app.c:209:6:handleCharacterInput	16	static
+../Core/Src/cli_app.c:229:6:vCommandConsoleTask	24	static
