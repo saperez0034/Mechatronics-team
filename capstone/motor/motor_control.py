@@ -4,7 +4,7 @@ import serial
 import time
 
 
-def send_data(str, ser):
+def send_data(ser, str):
     for ch in str:
         ser.write(ch.encode("utf-8"))
         time.sleep(0.01)

@@ -83,9 +83,9 @@ def detect_and_log_grape_properties(img):
                 h_range = (np.min(all_h), np.max(all_h))
                 s_range = (np.min(all_s), np.max(all_s))
                 v_range = (np.min(all_v), np.max(all_v))
-                cv2.imshow("Detected Grapes", original)
-                cv2.imshow("Edge Detection", edges)
-                cv2.waitKey(1)
+                # cv2.imshow("Detected Grapes", original)
+                # cv2.imshow("Edge Detection", edges)
+                # cv2.waitKey(1)
                 return [h_range, s_range, v_range]
             else:
                 return None

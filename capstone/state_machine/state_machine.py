@@ -53,7 +53,7 @@ class StateMachine:
         # Add finalization logic here
         # Transition to the next state or end
         motor_control.send_data(self.ser, self.led_command)
-        self.current_state = 'INITIAL'
+        self.current_state = 'DETECTING'
 
     def run(self):
         while True:
