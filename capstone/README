@@ -1,0 +1,3 @@
+To run state machine run: sudo python3 -m state_machine.state_machine while in the capstone directory
+
+
