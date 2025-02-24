@@ -123,13 +123,18 @@ def vision_setup():
     return pipeline
 
 
+def get_color_image(pipeline):
+    frames = pipeline.wait_for_frames()
+    color_frame = frames.get_color_frame()
+    color_image = np.asanyarray(color_frame.get_data())
+    return color_image
+
+
 if __name__ == "__main__":
     pipeline = vision_setup()
     try:
         while True:
-            frames = pipeline.wait_for_frames()
-            color_frame = frames.get_color_frame()
-            color_image = np.asanyarray(color_frame.get_data())
+            color_image = get_color_image(pipeline)
             mid_point = detect_and_log_grape_properties(color_image)
             print(mid_point)
 

@@ -11,6 +11,7 @@ class StateMachine:
             'FINAL': self.final_state
         }
         self.current_state = 'INITIAL'
+        self.pipeline = None
         self.ser = None
         self.h_range = None
         self.s_range = None
@@ -20,13 +21,14 @@ class StateMachine:
     def initial_state(self):
         print("Initial state")
         # Transition to the next state
-        detect_lesion.vision_setup()
+        self.pipeline = detect_lesion.vision_setup()
         self.ser = motor_control.motor_setup()
         self.current_state = 'DETECTING'
 
     def detecting_state(self):
         print("Detecting state")
-        result = detect_lesion.detect_and_log_grape_properties()
+        color_image = detect_lesion.get_color_image(self.pipeline)
+        result = detect_lesion.detect_and_log_grape_properties(color_image)
         # Transition to the next state
         if result is None:
             self.current_state = 'DETECTING'
@@ -63,3 +65,4 @@ class StateMachine:
 if __name__ == "__main__":
     state_machine = StateMachine()
     state_machine.run()
+    
