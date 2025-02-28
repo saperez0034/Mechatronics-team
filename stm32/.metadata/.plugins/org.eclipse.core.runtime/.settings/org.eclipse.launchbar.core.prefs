@@ -9,5 +9,7 @@ org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:capstone_rtos\ Debug/activeLaun
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:capstone_rtos\ Debug/activeLaunchTarget=null\:---
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:casptone_test\ Debug/activeLaunchMode=debug
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:casptone_test\ Debug/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:cli_and_motors\ Debug/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:cli_and_motors\ Debug/activeLaunchTarget=null\:---
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:cli_demo\ Debug/activeLaunchMode=run
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:cli_demo\ Debug/activeLaunchTarget=null\:---
