@@ -1,0 +1,17 @@
+14:06:03 **** Build of configuration Debug for project capstone_freertos_cli ****
+make -j20 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xE -DSTM32_THREAD_SAFE_STRATEGY=4 -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../Core/ThreadSafe -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "capstone_freertos_cli.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Sebastian\Desktop\Capstone\capstone_freertos_cli\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="capstone_freertos_cli.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: capstone_freertos_cli.elf
+ 
+arm-none-eabi-size  capstone_freertos_cli.elf 
+arm-none-eabi-objdump -h -S capstone_freertos_cli.elf  > "capstone_freertos_cli.list"
+   text	   data	    bss	    dec	    hex	filename
+  31552	    128	  21256	  52936	   cec8	capstone_freertos_cli.elf
+Finished building: default.size.stdout
+ 
+Finished building: capstone_freertos_cli.list
+ 
+
+14:06:04 Build Finished. 0 errors, 0 warnings. (took 643ms)
+

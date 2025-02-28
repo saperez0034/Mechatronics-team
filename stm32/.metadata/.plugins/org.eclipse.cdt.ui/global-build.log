@@ -1,0 +1,32 @@
+23:15:19 **** Incremental Build of configuration Debug for project cli_demo ****
+make -j20 all 
+arm-none-eabi-gcc "../Core/Src/stepper.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xE -DSTM32_THREAD_SAFE_STRATEGY=4 -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../Core/ThreadSafe -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/stepper.d" -MT"Core/Src/stepper.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/stepper.o"
+../Core/Src/stepper.c: In function 'vStepperControlX':
+../Core/Src/stepper.c:11:13: warning: pointer targets in passing argument 3 of 'xTaskNotifyWait' differ in signedness [-Wpointer-sign]
+   11 |             &steps, // Receives the notification value
+      |             ^~~~~~
+      |             |
+      |             int32_t * {aka long int *}
+In file included from ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:127,
+                 from ../Core/Src/stepper.c:2:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:2021:100: note: expected 'uint32_t *' {aka 'long unsigned int *'} but argument is of type 'int32_t *' {aka 'long int *'}
+ 2021 | BaseType_t xTaskNotifyWait( uint32_t ulBitsToClearOnEntry, uint32_t ulBitsToClearOnExit, uint32_t *pulNotificationValue, TickType_t xTicksToWait ) PRIVILEGED_FUNCTION;
+      |                                                                                          ~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+arm-none-eabi-gcc -o "cli_demo.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Sebastian\Desktop\Capstone\cli_demo\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="cli_demo.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: cli_demo.elf
+ 
+arm-none-eabi-size  cli_demo.elf 
+arm-none-eabi-objdump -h -S cli_demo.elf  > "cli_demo.list"
+   text	   data	    bss	    dec	    hex	filename
+  32660	    128	  21264	  54052	   d324	cli_demo.elf
+Finished building: default.size.stdout
+ 
+Finished building: cli_demo.list
+ 
+23:15:21 **** Incremental Build of configuration Debug for project cli_demo ****
+make -j20 all 
+arm-none-eabi-size  cli_demo.elf 
+   text	   data	    bss	    dec	    hex	filename
+  32660	    128	  21264	  54052	   d324	cli_demo.elf
+Finished building: default.size.stdout
+ 

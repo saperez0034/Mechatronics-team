@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "cli_app.h"
+#include "stepper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +52,18 @@ const osThreadAttr_t cmdLineTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
+osThreadId_t stepperXTaskHandle; // new command line task
+const osThreadAttr_t stepperX_attributes = {
+  .name = "stepperXTask", // defined in cli_app.c
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
+// osThreadId_t stepperYTaskHandle; // new command line task
+// const osThreadAttr_t stepperYTask_attributes = {
+//   .name = "stepperYTask", // defined in cli_app.c
+//   .priority = (osPriority_t) osPriorityLow,
+//   .stack_size = 128 * 4
+// };
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -98,10 +111,10 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   cmdLineTaskHandle = osThreadNew(vCommandConsoleTask, NULL, &cmdLineTask_attributes);
+  stepperXTaskHandle = osThreadNew(vStepperControlX, NULL, &stepperX_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

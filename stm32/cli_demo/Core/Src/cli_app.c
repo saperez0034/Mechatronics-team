@@ -9,6 +9,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "stepper.h"
 // #include "stm32f4xx_hal_gpio.h"
 #define MAX_INPUT_LENGTH 50
 #define USING_VS_CODE_TERMINAL 0
@@ -21,6 +22,7 @@ const char * cli_prompt = "\r\ncli> ";
 uint8_t backspace[] = "\b \b";
 uint8_t backspace_tt[] = " \b";
 uint8_t flag = 0;
+extern stepperXTaskHandle;
 
 int _write(int file, char *data, int len)
 {
@@ -122,6 +124,57 @@ BaseType_t cmd_add(char *pcWriteBuffer, size_t xWriteBufferLen,
     
     return pdFALSE;
 }
+//*****************************************************************************
+BaseType_t cmd_stepx(char *pcWriteBuffer, size_t xWriteBufferLen,
+                                const char *pcCommandString)
+{
+    char *pcParameter1;
+    BaseType_t xParameter1StringLength;
+
+    /* Obtain the name of the source file, and the length of its name, from
+    the command string. The name of the source file is the first parameter. */
+    pcParameter1 = FreeRTOS_CLIGetParameter
+                        (
+                          /* The command string itself. */
+                          pcCommandString,
+                          /* Return the first parameter. */
+                          1,
+                          /* Store the parameter string length. */
+                          &xParameter1StringLength
+                        );
+    // convert the string to a number
+
+    int32_t xValue1 = strtol(pcParameter1, NULL, 10);
+    xTaskNotify(stepperXTaskHandle, xValue1, eSetValueWithOverwrite);
+    char cResultString[10];
+    itoa(xValue1, cResultString, 10);
+    // copy the result to the write buffer
+    strcpy(pcWriteBuffer, cResultString);
+    return pdFALSE;
+}
+//*****************************************************************************
+BaseType_t cmd_stepy(char *pcWriteBuffer, size_t xWriteBufferLen,
+    const char *pcCommandString)
+{
+    char *pcParameter1;
+    BaseType_t xParameter1StringLength;
+
+    /* Obtain the name of the source file, and the length of its name, from
+    the command string. The name of the source file is the first parameter. */
+    pcParameter1 = FreeRTOS_CLIGetParameter
+                        (
+                          /* The command string itself. */
+                          pcCommandString,
+                          /* Return the first parameter. */
+                          1,
+                          /* Store the parameter string length. */
+                          &xParameter1StringLength
+                        );
+    // convert the string to a number
+    int32_t xValue1 = strtol(pcParameter1, NULL, 10);
+    return pdFALSE;
+}
+
 
 const CLI_Command_Definition_t xCommandList[] = {
     {
@@ -147,6 +200,18 @@ const CLI_Command_Definition_t xCommandList[] = {
         .pcHelpString = "hello: prints: \"HelloWorld\"\r\n\r\n",
         .pxCommandInterpreter = cmd_hello, /* The function to run. */
         .cExpectedNumberOfParameters = 0 /* 2 parameters are expected. */
+    },
+    {
+        .pcCommand = "stepx",
+        .pcHelpString = "stepx: \r\n moves stepper in the x axis\r\n\r\n",
+        .pxCommandInterpreter = cmd_stepx,
+        .cExpectedNumberOfParameters = 1 
+    },
+    {
+        .pcCommand = "stepy",
+        .pcHelpString = "stepy: \r\n moves stepper in the y axis\r\n\r\n",
+        .pxCommandInterpreter = cmd_stepy,
+        .cExpectedNumberOfParameters = 1 
     },
     {
         .pcCommand = NULL /* simply used as delimeter for end of array*/
