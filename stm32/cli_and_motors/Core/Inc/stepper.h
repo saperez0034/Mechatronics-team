@@ -12,4 +12,4 @@ void vStepperControlY (void);
 }
 #endif
 
-#endif /* __USART_H__ */
+#endif
