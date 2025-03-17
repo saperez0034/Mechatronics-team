@@ -10,8 +10,7 @@ def send_data(ser, str):
         time.sleep(0.01)
 
 
-# if __name__ == "__main__":
-def motor_setup():
+def stm32_setup():
     ser = serial.Serial("/dev/ttyACM0", 115200)
 
     ser.reset_input_buffer()
@@ -21,7 +20,7 @@ def motor_setup():
 
 
 if __name__ == "__main__":
-    ser = motor_setup()
+    ser = stm32_setup()
     cmd = 'toggleled\r'
     while (1):
         send_data(cmd, ser)
