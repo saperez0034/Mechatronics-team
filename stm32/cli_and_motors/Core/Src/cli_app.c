@@ -26,6 +26,7 @@ extern stepperXTaskHandle;
 extern stepperYTaskHandle;
 extern rotServoTaskHandle;
 extern linServoTaskHandle;
+extern linActTaskHandle;
 
 int _write(int file, char *data, int len)
 {
@@ -223,6 +224,31 @@ BaseType_t cmd_servo_lin(char *pcWriteBuffer, size_t xWriteBufferLen,
     xTaskNotify(linServoTaskHandle, xValue1, eSetValueWithOverwrite);
     return pdFALSE;
 }
+//*****************************************************************************
+BaseType_t cmd_lin_act(char *pcWriteBuffer, size_t xWriteBufferLen,
+    const char *pcCommandString)
+{
+    char *pcParameter1;
+    BaseType_t xParameter1StringLength;
+
+    /* Obtain the name of the source file, and the length of its name, from
+    the command string. The name of the source file is the first parameter. */
+    pcParameter1 = FreeRTOS_CLIGetParameter
+                        (
+                        /* The command string itself. */
+                        pcCommandString,
+                        /* Return the first parameter. */
+                        1,
+                        /* Store the parameter string length. */
+                        &xParameter1StringLength
+                        );
+    // convert the string to a number
+
+    int32_t xValue1 = strtol(pcParameter1, NULL, 10);
+    xTaskNotify(linActTaskHandle, xValue1, eSetValueWithOverwrite);
+    return pdFALSE;
+}
+
 
 const CLI_Command_Definition_t xCommandList[] = {
     {
@@ -269,8 +295,14 @@ const CLI_Command_Definition_t xCommandList[] = {
     },
     {
         .pcCommand = "servo_lin",
-        .pcHelpString = "servo_lin: \r\n moves servo to a given pctg\r\n\r\n",
+        .pcHelpString = "servo_lin: \r\n moves linear servo to a given pctg length\r\n\r\n",
         .pxCommandInterpreter = cmd_servo_lin,
+        .cExpectedNumberOfParameters = 1 
+    },
+    {
+        .pcCommand = "lin_act",
+        .pcHelpString = "lin_act: \r\n moves lin actuator to a given pctg length\r\n\r\n",
+        .pxCommandInterpreter = cmd_lin_act,
         .cExpectedNumberOfParameters = 1 
     },
     {

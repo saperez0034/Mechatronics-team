@@ -1,5 +1,5 @@
-#ifndef __SERVO_H__
-#define __SERVO_H__
+#ifndef __ACTUATORS_H__
+#define __ACTUATORS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,6 +8,8 @@ extern "C" {
 void vServoControl (void);
 
 void vLinServoControl (void);
+
+void vLinActControl (void);
 
 #ifdef __cplusplus
 }

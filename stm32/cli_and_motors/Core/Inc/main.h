@@ -57,8 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define led_out_Pin GPIO_PIN_5
-#define led_out_GPIO_Port GPIOA
+#define hbridge_l1_Pin GPIO_PIN_5
+#define hbridge_l1_GPIO_Port GPIOA
+#define hbridge_en_Pin GPIO_PIN_6
+#define hbridge_en_GPIO_Port GPIOA
+#define hbridge_l2_Pin GPIO_PIN_7
+#define hbridge_l2_GPIO_Port GPIOA
 #define stp2_dir_Pin GPIO_PIN_6
 #define stp2_dir_GPIO_Port GPIOC
 #define lin_servo_pwm_Pin GPIO_PIN_7

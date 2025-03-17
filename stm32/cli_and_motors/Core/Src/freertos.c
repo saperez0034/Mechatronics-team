@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "cli_app.h"
 #include "stepper.h"
-#include "servo.h"
+#include "actuators.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,6 +74,12 @@ const osThreadAttr_t rotServoTask_attributes = {
 osThreadId_t linServoTaskHandle; // new command line task
 const osThreadAttr_t linServoTask_attributes = {
   .name = "linServoTask", // defined in cli_app.c
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
+osThreadId_t linActTaskHandle; // new command line task
+const osThreadAttr_t linActTask_attributes = {
+  .name = "linActTask", // defined in cli_app.c
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
@@ -132,7 +138,8 @@ void MX_FREERTOS_Init(void) {
   stepperXTaskHandle = osThreadNew(vStepperControlX, NULL, &stepperXTask_attributes);
   stepperYTaskHandle = osThreadNew(vStepperControlY, NULL, &stepperYTask_attributes);
   rotServoTaskHandle = osThreadNew(vServoControl, NULL, &rotServoTask_attributes);
-  linServoTaskHandle = osThreadNew(vLinServoControl, NULL, &rotServoTask_attributes);
+  linServoTaskHandle = osThreadNew(vLinServoControl, NULL, &linServoTask_attributes);
+  linActTaskHandle = osThreadNew(vLinActControl, NULL, &linActTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

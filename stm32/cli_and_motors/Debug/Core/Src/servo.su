@@ -1,2 +1,0 @@
-../Core/Src/servo.c:6:6:vServoControl	16	static
-../Core/Src/servo.c:20:6:vLinServoControl	16	static
