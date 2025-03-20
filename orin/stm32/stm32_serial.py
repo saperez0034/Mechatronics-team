@@ -8,6 +8,7 @@ def send_data(ser, str):
     for ch in str:
         ser.write(ch.encode("utf-8"))
         time.sleep(0.01)
+    time.sleep(0.01)
 
 
 def stm32_setup():
