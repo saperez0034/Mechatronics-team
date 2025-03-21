@@ -4,11 +4,6 @@ import numpy as np
 from math import pi
 
 
-def draw_target(img, x, y, w, h):
-    cv2.line(img, ((x + w) / 2, (y + h) / 4), ((x + w) / 2, 3 * (y + h) / 4))
-    cv2.line(img, ((x + w) / 4, (y + h) / 2), (3 * (x + w) / 4, (y + h) / 2))
-
-
 def detect_and_log_grape_properties(img):
     mid_point = (None, None)
     original = img.copy()
@@ -19,6 +14,10 @@ def detect_and_log_grape_properties(img):
     blurred = cv2.GaussianBlur(gray, (7, 7), 0)
     edges = cv2.Canny(blurred, 30, 150)
 
+    x_needle = 320
+    y_needle = 240
+    cv2.line(original, (x_needle-5, y_needle), (x_needle+5, y_needle), 180)
+    cv2.line(original, (x_needle, y_needle-5), (x_needle, y_needle+5), 180)
     # Find contours
     contours, _ = cv2.findContours(
         edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -32,6 +31,7 @@ def detect_and_log_grape_properties(img):
     min_area = 500
 
     circularity_threshold = 0.7
+    result = []
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area < min_area:
@@ -83,16 +83,12 @@ def detect_and_log_grape_properties(img):
                 h_range = (np.min(all_h), np.max(all_h))
                 s_range = (np.min(all_s), np.max(all_s))
                 v_range = (np.min(all_v), np.max(all_v))
-                # cv2.imshow("Detected Grapes", original)
-                # cv2.imshow("Edge Detection", edges)
-                # cv2.waitKey(1)
-                return [h_range, s_range, v_range]
-            else:
-                return None
+                result.insert(0,  [h_range, s_range, v_range, mid_point])
     # Display results
-    # cv2.imshow("Detected Grapes", original)
+    cv2.imshow("Detected Grapes", original)
     # cv2.imshow("Edge Detection", edges)
-    # cv2.waitKey(1)
+    cv2.waitKey(1)
+    return result
     # return mid_point
 
 
