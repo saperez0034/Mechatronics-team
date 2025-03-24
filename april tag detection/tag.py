@@ -13,14 +13,14 @@ detector = Detector(
     debug=0
 )
 
-mtx = np.loadtxt('april tag detection/cam_intrinsics.txt')
+mtx = np.loadtxt('/Users/perrintong/Documents/18-578/Mechatronics-team/april tag detection/cam_intrinsics.txt')
 camera_params = (mtx[0, 0], mtx[1, 1], mtx[0, 2], mtx[1, 2])
 tag_size = 0.135
 
 needle_length = 0.05  # meters, placeholder value
-gantry_depth = 0.1  # meters, placeholder value
+gantry_depth = 0  # meters, placeholder value
 
-test_img = cv2.imread('april tag detection/tag.jpg')
+test_img = cv2.imread('/Users/perrintong/Documents/18-578/Mechatronics-team/april tag detection/tag.jpg')
 
 
 def main():
