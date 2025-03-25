@@ -28,13 +28,6 @@ class StateMachine:
         self.dt = 0.1
         self.stepx = 0
         self.stepy = 0
-        self.led_command = "toggleled\r"
-        self.lin_act_extend_command = "lin_act 1\r"
-        self.lin_act_retract_command = "lin_act 0\r"
-        self.lin_stepper_extend_command = "lin_stepper 100\r"
-        self.lin_stepper_retract_command = "lin_stepper 0\r"
-        self.stepperY_command = "stepY 10\r"
-        self.stepperX_command = "stepX 10\r"
         self.stepperX_midpoint_steps = 100
 
     def move_x (self, steps):
@@ -43,18 +36,32 @@ class StateMachine:
     def move_y (self, steps):
         stm32.send_data(self.ser, 'stepy '+ str(steps) + '\r')
 
+    def lin_stepper(self, pctg):
+        stm32.send_data(self.ser, 'lin_stepper '+ str(pctg) + '\r')
+
+    def lin_act(self, ext):
+        stm32.send_data(self.ser, 'lin_act '+ str(ext) + '\r')
+
     def release_sample(self):
         stm32.send_data(self.ser, self.lin_act_extend_command)
 
     def initial_state(self):
         print("Initial state")
-        # Transition to the next state
         self.pipeline = detect_lesion.vision_setup()
         self.ser = stm32.stm32_setup()
         for i in range(3):
             stm32.send_data(self.ser, "\r")
-        stm32.send_data(self.ser, self.lin_stepper_retract_command)
-        stm32.send_data(self.ser, self.lin_act_extend_command)
+        
+        self.move_x(self, -1000000) # Resetting the End effector to Origin
+        self.move_y(self, -1000000)
+
+        self.lin_stepper(self, 0) # Moving end effector to the top
+        self.lin_act(self, 1) # Priming needle
+
+        time.sleep(15)
+
+        self.move_x(self, self.stepperX_midpoint_steps)
+        
         self.current_state = 'DETECTING'
 
     def detecting_state(self):
@@ -63,7 +70,7 @@ class StateMachine:
         result = detect_lesion.detect_and_log_grape_properties(color_image)
         # Transition to the next state
         if result is None:
-            stm32.send_data(self.ser, self.stepperY_command)
+            self.move_y(self, 100)
             self.current_state = 'DETECTING'
         else:
             self.lesion_midpoint = result
