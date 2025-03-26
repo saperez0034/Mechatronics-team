@@ -26,8 +26,10 @@ class StateMachine:
         self.i_x = 0
         self.i_y = 0
         self.dt = 0.1
-        self.stepx = 0
-        self.stepy = 0
+        self.step_x = 0
+        self.step_y = 0
+        self.total_steps_x = 0
+        self.total_steps_y = 0
         self.stepperX_midpoint_steps = 100
 
     def move_x (self, steps):
@@ -41,9 +43,6 @@ class StateMachine:
 
     def lin_act(self, ext):
         stm32.send_data(self.ser, 'lin_act '+ str(ext) + '\r')
-
-    def release_sample(self):
-        stm32.send_data(self.ser, self.lin_act_extend_command)
 
     def initial_state(self):
         print("Initial state")
@@ -61,6 +60,7 @@ class StateMachine:
         time.sleep(15)
 
         self.move_x(self, self.stepperX_midpoint_steps)
+        self.total_steps_x += self.stepperX_midpoint_steps
         
         self.current_state = 'DETECTING'
 
@@ -71,6 +71,7 @@ class StateMachine:
         # Transition to the next state
         if result is None:
             self.move_y(self, 100)
+            self.total_steps_y += 100
             self.current_state = 'DETECTING'
         else:
             self.lesion_midpoint = result
@@ -83,41 +84,39 @@ class StateMachine:
                         self.needle_x, self.lesion_midpoint[0], self.kp, self.ki, 
                         self.kd, self.pid_error_x, self.i_x, self.dt)
             self.move_x(self, self.step_x)
+            self.total_steps_x += self.step_x
         if (self.pid_error_y > 0.1):
             self.step_y, self.pid_error_x, self.i_x = pid.pid_controller(
                         self.needle_y, self.lesion_midpoint[0], self.kp, self.ki, 
                         self.kd, self.pid_error_y, self.i_y, self.dt)
             self.move_y(self, self.step_y)
+            self.total_steps_y += self.step_y
         if (self.pid_error_x < 0.1 and self.pid_error_y < 0.1):
             self.current_state = 'EXTRACT_SAMPLE'
         self.current_state = 'DETECTING'
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        # Add extraction logic here
-        # Transition to the next state
-        stm32.send_data(self.ser, self.lin_stepper_extend_command)
+        self.lin_stepper(self, 100)
         time.sleep(10)
-        stm32.send_data(self.ser, self.lin_act_retract_command)
+        self.lin_act(self, 0)
         time.sleep(1)
-        stm32.send_data(self.ser, self.lin_stepper_retract_command)
+        self.lin_stepper(self, 0)
         time.sleep(10)
         self.current_state = 'FINAL'
 
     def final_state(self):
         print("Final state")
-        # Add finalization logic here
-        # Transition to the next state or end
-        self.release_sample()
-        stm32.send_data(self.ser, self.led_command)
-        self.current_state = 'DETECTING'
+        self.move_x(self, -self.total_steps_x)
+        self.move_y(self, -self.total_steps_y)
+        time.sleep(30)
+        self.lin_act(self, 1)
     
     def run(self):
         while True:
             state_function = self.states[self.current_state]
             state_function()
             time.sleep(0.1)
-
 
 if __name__ == "__main__":
     state_machine = StateMachine()
