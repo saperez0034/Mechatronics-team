@@ -57,6 +57,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define lim_switch_1_Pin GPIO_PIN_0
+#define lim_switch_1_GPIO_Port GPIOC
+#define lim_switch_1_EXTI_IRQn EXTI0_IRQn
+#define lim_switch_2_Pin GPIO_PIN_1
+#define lim_switch_2_GPIO_Port GPIOC
+#define lim_switch_2_EXTI_IRQn EXTI1_IRQn
+#define lim_switch_3_Pin GPIO_PIN_2
+#define lim_switch_3_GPIO_Port GPIOC
+#define lim_switch_3_EXTI_IRQn EXTI2_IRQn
+#define lim_switch_4_Pin GPIO_PIN_3
+#define lim_switch_4_GPIO_Port GPIOC
+#define lim_switch_4_EXTI_IRQn EXTI3_IRQn
 #define hbridge_l1_Pin GPIO_PIN_5
 #define hbridge_l1_GPIO_Port GPIOA
 #define hbridge_en_Pin GPIO_PIN_6
@@ -77,6 +89,9 @@ void Error_Handler(void);
 #define stp1_dir_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+
+extern volatile uint8_t stepper_x_stop;
+extern volatile uint8_t stepper_y_stop;
 
 /* USER CODE END Private defines */
 
