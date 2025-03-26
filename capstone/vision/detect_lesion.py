@@ -1,5 +1,8 @@
 import cv2
-import pyrealsense2 as rs
+try:
+    import pyrealsense2 as rs
+except ImportError:
+    print("pyrealsense2 not found. Make sure to install the RealSense SDK.")
 import numpy as np
 from math import pi
 
@@ -10,18 +13,29 @@ def draw_target(img, x, y, w, h):
 
 
 def detect_and_log_grape_properties(img):
-    mid_point = (None, None)
+    mid_points = []
     original = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Preprocessing
     blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-    edges = cv2.Canny(blurred, 30, 150)
+    # edges = cv2.Canny(blurred, 30, 150)
+
+    thresh = cv2.adaptiveThreshold(
+        blurred, 255,
+        cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY_INV,
+        11,   # blockSize
+        2     # constant subtracted from the mean
+    )
+
+    kernel = np.ones((3, 3), np.uint8)
+    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
 
     # Find contours
     contours, _ = cv2.findContours(
-        edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        closed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # Color range storage
     all_h = []
@@ -29,12 +43,14 @@ def detect_and_log_grape_properties(img):
     all_v = []
 
     # Shape detection parameters
-    min_area = 500
+    max_area = 18000
 
-    circularity_threshold = 0.7
+    circularity_threshold = 0.05
+    print(len(contours))
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if area < min_area:
+        print("Area: ", area)
+        if area > max_area:
             continue
 
         # Calculate circularity
@@ -45,6 +61,7 @@ def detect_and_log_grape_properties(img):
 
         if circularity > circularity_threshold:
             # Draw contour
+            print("Circularity: ", circularity)
             cv2.drawContours(original, [cnt], -1, (255, 0, 0), 2)
 
             # Draw Target
@@ -61,39 +78,39 @@ def detect_and_log_grape_properties(img):
                 (x + int(3 * w / 4), y + int(h / 2)),
                 255,
             )  # Horizontal Line
-            mid_point = (x + int(w / 2), y + int(h / 2))
+            mid_points.append((x + int(w / 2), y + int(h / 2)))
 
             # Create mask for the grape
             mask = np.zeros_like(gray)
             cv2.drawContours(mask, [cnt], -1, 255, -1)
 
-            # Get color values within the contour
+        # Get color values within the contour
 
-            mean_val = cv2.mean(hsv, mask=mask)
-            min_val = np.min(hsv[mask == 255], axis=0)
-            max_val = np.max(hsv[mask == 255], axis=0)
+        # mean_val = cv2.mean(hsv, mask=mask)
+        # min_val = np.min(hsv[mask == 255], axis=0)
+        # max_val = np.max(hsv[mask == 255], axis=0)
 
-            # Store color values
+        # # Store color values
 
-            all_h.extend([min_val[0], max_val[0], mean_val[0]])
-            all_s.extend([min_val[1], max_val[1], mean_val[1]])
-            all_v.extend([min_val[2], max_val[2], mean_val[2]])
-            # Calculate overall color range
-            if len(all_h) > 0:
-                h_range = (np.min(all_h), np.max(all_h))
-                s_range = (np.min(all_s), np.max(all_s))
-                v_range = (np.min(all_v), np.max(all_v))
-                cv2.imshow("Detected Grapes", original)
-                cv2.imshow("Edge Detection", edges)
-                cv2.waitKey(1)
-                return [h_range, s_range, v_range]
-            else:
-                return None
+        # all_h.extend([min_val[0], max_val[0], mean_val[0]])
+        # all_s.extend([min_val[1], max_val[1], mean_val[1]])
+        # all_v.extend([min_val[2], max_val[2], mean_val[2]])
+        # # Calculate overall color range
+        # if len(all_h) > 0:
+        #     h_range = (np.min(all_h), np.max(all_h))
+        #     s_range = (np.min(all_s), np.max(all_s))
+        #     v_range = (np.min(all_v), np.max(all_v))
+        # cv2.imshow("Detected Grapes", original)
+        # cv2.imshow("Edge Detection", closed)
+        # cv2.waitKey(1)
+        # return [h_range, s_range, v_range]
+        # else:
+        # return None
     # Display results
-    # cv2.imshow("Detected Grapes", original)
-    # cv2.imshow("Edge Detection", edges)
-    # cv2.waitKey(1)
-    # return mid_point
+    cv2.imshow("Detected Grapes", original)
+    cv2.imshow("Edge Detection", closed)
+    cv2.waitKey(1)
+    return mid_points
 
 
 def vision_setup():
@@ -131,12 +148,16 @@ def get_color_image(pipeline):
 
 
 if __name__ == "__main__":
-    pipeline = vision_setup()
-    try:
-        while True:
-            color_image = get_color_image(pipeline)
-            mid_point = detect_and_log_grape_properties(color_image)
-            print(mid_point)
+    # pipeline = vision_setup()
+    # try:
+    #     while True:
+    #         color_image = get_color_image(pipeline)
+    #         mid_point = detect_and_log_grape_properties(color_image)
+    #         print(mid_point)
 
-    finally:
-        pipeline.stop()
+    # finally:
+    #     pipeline.stop()
+    image = cv2.imread('/Users/perrintong/Desktop/fruitEw.png')
+    mid_point = detect_and_log_grape_properties(image)
+    while True:
+        pass
