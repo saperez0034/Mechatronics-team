@@ -30,7 +30,7 @@ def detect_and_log_grape_properties(img):
         2     # constant subtracted from the mean
     )
 
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = np.ones((4, 4), np.uint8)
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
 
     # Find contours
@@ -43,14 +43,13 @@ def detect_and_log_grape_properties(img):
     all_v = []
 
     # Shape detection parameters
-    max_area = 18000
+    max_area = 10000
+    min_area = 3000
 
-    circularity_threshold = 0.05
-    print(len(contours))
+    circularity_threshold = 0.5
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        print("Area: ", area)
-        if area > max_area:
+        if area > max_area or area < min_area:
             continue
 
         # Calculate circularity
@@ -61,6 +60,7 @@ def detect_and_log_grape_properties(img):
 
         if circularity > circularity_threshold:
             # Draw contour
+            print("area:", area)
             print("Circularity: ", circularity)
             cv2.drawContours(original, [cnt], -1, (255, 0, 0), 2)
 
@@ -148,16 +148,16 @@ def get_color_image(pipeline):
 
 
 if __name__ == "__main__":
-    # pipeline = vision_setup()
-    # try:
-    #     while True:
-    #         color_image = get_color_image(pipeline)
-    #         mid_point = detect_and_log_grape_properties(color_image)
-    #         print(mid_point)
+    pipeline = vision_setup()
+    try:
+        while True:
+            color_image = get_color_image(pipeline)
+            mid_point = detect_and_log_grape_properties(color_image)
+            print(mid_point)
 
-    # finally:
-    #     pipeline.stop()
-    image = cv2.imread('/Users/perrintong/Desktop/fruitEw.png')
-    mid_point = detect_and_log_grape_properties(image)
-    while True:
-        pass
+    finally:
+        pipeline.stop()
+    # image = cv2.imread('/Users/perrintong/Desktop/fruitEw.png')
+    # mid_point = detect_and_log_grape_properties(image)
+    # while True:
+        # pass
