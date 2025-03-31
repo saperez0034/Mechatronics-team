@@ -319,6 +319,12 @@ const CLI_Command_Definition_t xCommandList[] = {
         .cExpectedNumberOfParameters = 1 
     },
     {
+        .pcCommand = "servo_rot2",
+        .pcHelpString = "servo_rot2: \r\n rotates servo 2 to a given angle\r\n\r\n",
+        .pxCommandInterpreter = cmd_servo_rot2,
+        .cExpectedNumberOfParameters = 1 
+    },
+    {
         .pcCommand = "servo_lin",
         .pcHelpString = "servo_lin: \r\n moves linear servo to a given pctg length\r\n\r\n",
         .pxCommandInterpreter = cmd_servo_lin,

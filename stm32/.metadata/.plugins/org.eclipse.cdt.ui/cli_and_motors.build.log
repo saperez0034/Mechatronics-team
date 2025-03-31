@@ -1,10 +1,10 @@
-01:20:04 **** Incremental Build of configuration Debug for project cli_and_motors ****
+09:15:41 **** Incremental Build of configuration Debug for project cli_and_motors ****
 make -j20 all 
 arm-none-eabi-size  cli_and_motors.elf 
    text	   data	    bss	    dec	    hex	filename
-  37904	    128	  21360	  59392	   e800	cli_and_motors.elf
+  38064	    128	  21360	  59552	   e8a0	cli_and_motors.elf
 Finished building: default.size.stdout
  
 
-01:20:05 Build Finished. 0 errors, 0 warnings. (took 238ms)
+09:15:42 Build Finished. 0 errors, 0 warnings. (took 242ms)
 

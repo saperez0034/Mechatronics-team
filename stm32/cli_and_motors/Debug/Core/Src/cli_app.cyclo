@@ -9,9 +9,9 @@
 ../Core/Src/cli_app.c:205:12:cmd_servo_rot2	1
 ../Core/Src/cli_app.c:229:12:cmd_servo_lin	1
 ../Core/Src/cli_app.c:253:12:cmd_lin_act	1
-../Core/Src/cli_app.c:338:6:vRegisterCLICommands	2
-../Core/Src/cli_app.c:346:6:cliWrite	1
-../Core/Src/cli_app.c:353:6:handleNewline	2
-../Core/Src/cli_app.c:369:6:handleBackspace	2
-../Core/Src/cli_app.c:391:6:handleCharacterInput	5
-../Core/Src/cli_app.c:411:6:vCommandConsoleTask	3
+../Core/Src/cli_app.c:344:6:vRegisterCLICommands	2
+../Core/Src/cli_app.c:352:6:cliWrite	1
+../Core/Src/cli_app.c:359:6:handleNewline	2
+../Core/Src/cli_app.c:375:6:handleBackspace	2
+../Core/Src/cli_app.c:397:6:handleCharacterInput	5
+../Core/Src/cli_app.c:417:6:vCommandConsoleTask	3
