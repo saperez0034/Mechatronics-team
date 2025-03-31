@@ -71,6 +71,12 @@ const osThreadAttr_t rotServoTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
+osThreadId_t rotServoTaskHandle2; // new command line task
+const osThreadAttr_t rotServoTask2_attributes = {
+  .name = "rot2ServoTask", // defined in cli_app.c
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 128 * 4
+};
 osThreadId_t linServoTaskHandle; // new command line task
 const osThreadAttr_t linServoTask_attributes = {
   .name = "linServoTask", // defined in cli_app.c
@@ -138,6 +144,7 @@ void MX_FREERTOS_Init(void) {
   stepperXTaskHandle = osThreadNew(vStepperControlX, NULL, &stepperXTask_attributes);
   stepperYTaskHandle = osThreadNew(vStepperControlY, NULL, &stepperYTask_attributes);
   rotServoTaskHandle = osThreadNew(vServoControl, NULL, &rotServoTask_attributes);
+  rotServoTaskHandle2 = osThreadNew(vServoControl2, NULL, &rotServoTask2_attributes);
   linServoTaskHandle = osThreadNew(vLinServoControl, NULL, &linServoTask_attributes);
   linActTaskHandle = osThreadNew(vLinActControl, NULL, &linActTask_attributes);
   /* USER CODE END RTOS_THREADS */

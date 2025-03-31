@@ -1,3 +1,4 @@
 ../Core/Src/actuators.c:6:6:vServoControl	1
-../Core/Src/actuators.c:20:6:vLinServoControl	1
-../Core/Src/actuators.c:34:6:vLinActControl	3
+../Core/Src/actuators.c:20:6:vServoControl2	1
+../Core/Src/actuators.c:34:6:vLinServoControl	1
+../Core/Src/actuators.c:48:6:vLinActControl	3

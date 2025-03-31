@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define hbridge_en_GPIO_Port GPIOA
 #define hbridge_l2_Pin GPIO_PIN_7
 #define hbridge_l2_GPIO_Port GPIOA
+#define rot_servo_pmw_2_Pin GPIO_PIN_0
+#define rot_servo_pmw_2_GPIO_Port GPIOB
 #define stp2_dir_Pin GPIO_PIN_6
 #define stp2_dir_GPIO_Port GPIOC
 #define lin_servo_pwm_Pin GPIO_PIN_7

@@ -47,6 +47,9 @@
 
 /* USER CODE BEGIN PV */
 
+volatile uint8_t stepper_x_stop;
+volatile uint8_t stepper_y_stop;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,6 +72,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+  stepper_x_stop = 0;
+  stepper_y_stop = 0;
 
   /* USER CODE END 1 */
 
@@ -165,6 +171,38 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == lim_switch_1_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_1_GPIO_Port, lim_switch_1_Pin) == 1)
+      stepper_x_stop = 1;
+    else
+      stepper_x_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_2_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_2_GPIO_Port, lim_switch_2_Pin) == 1)
+      stepper_y_stop = 1;
+    else
+      stepper_y_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_3_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_3_GPIO_Port, lim_switch_3_Pin) == 1)
+      stepper_x_stop = 1;
+    else
+      stepper_x_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_4_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_4_GPIO_Port, lim_switch_4_Pin) == 1)
+      stepper_y_stop = 1;
+    else
+      stepper_y_stop = 0;
+  }
+}
 
 /* USER CODE END 4 */
 
