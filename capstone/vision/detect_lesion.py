@@ -27,9 +27,9 @@ def contour_check(img, contours, min_area):
     circularity_threshold = 0.4
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        print(f"Area: {area}")
         if area < min_area:
             continue
+        print(area)
         perimeter = cv2.arcLength(cnt, True)
         if perimeter == 0:
             continue
@@ -73,8 +73,8 @@ def detect(img):
     contours_blackberry, _ = cv2.findContours(
         mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    midpoints_strawberry = contour_check(original, contours_strawberry, 5000)
-    midpoints_blackberry = contour_check(original, contours_blackberry, 1000)
+    midpoints_strawberry = contour_check(original, contours_strawberry, 550)
+    midpoints_blackberry = contour_check(original, contours_blackberry, 280)
 
     mid_points.extend(midpoints_strawberry)
     mid_points.extend(midpoints_blackberry)
@@ -122,15 +122,15 @@ def get_color_image(pipeline):
 
 
 if __name__ == "__main__":
-    # pipeline = vision_setup()
-    # try:
-    #     while True:
-    #         color_image = get_color_image(pipeline)
-    #         mid_point = detect_and_log_grape_properties(color_image)
-    #         print(mid_point)
+    pipeline = vision_setup()
+    try:
+        while True:
+            color_image = get_color_image(pipeline)
+            mid_point = detect(color_image)
+            print(mid_point)
 
-    # finally:
-    #     pipeline.stop()
+    finally:
+        pipeline.stop()
     image = cv2.imread(
         '/Users/perrintong/Documents/18-578/Mechatronics-team/capstone/vision/rs.png')
     # image = cv2.imread('/Users/perrintong/Desktop/fruitEw.png')
