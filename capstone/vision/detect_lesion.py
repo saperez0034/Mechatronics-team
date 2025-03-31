@@ -8,108 +8,83 @@ from math import pi
 
 
 def draw_target(img, x, y, w, h):
-    cv2.line(img, ((x + w) / 2, (y + h) / 4), ((x + w) / 2, 3 * (y + h) / 4))
-    cv2.line(img, ((x + w) / 4, (y + h) / 2), (3 * (x + w) / 4, (y + h) / 2))
+    cv2.line(
+        img,
+        (x + int(w / 2), y + int(h / 4)),
+        (x + int(w / 2), y + int(3 * h / 4)),
+        255,
+    )  # Vertical Line
+    cv2.line(
+        img,
+        (x + int(w / 4), y + int(h / 2)),
+        (x + int(3 * w / 4), y + int(h / 2)),
+        255,
+    )  # Horizontal Line
 
 
-def detect_and_log_grape_properties(img):
-    mid_points = []
-    original = img.copy()
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Preprocessing
-    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-    # edges = cv2.Canny(blurred, 30, 150)
-
-    thresh = cv2.adaptiveThreshold(
-        blurred, 255,
-        cv2.ADAPTIVE_THRESH_MEAN_C,
-        cv2.THRESH_BINARY_INV,
-        11,   # blockSize
-        2     # constant subtracted from the mean
-    )
-
-    kernel = np.ones((4, 4), np.uint8)
-    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
-
-    # Find contours
-    contours, _ = cv2.findContours(
-        closed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Color range storage
-    all_h = []
-    all_s = []
-    all_v = []
-
-    # Shape detection parameters
-    max_area = 10000
-    min_area = 3000
-
-    circularity_threshold = 0.5
+def contour_check(img, contours, min_area):
+    result = []
+    circularity_threshold = 0.4
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if area > max_area or area < min_area:
+        print(f"Area: {area}")
+        if area < min_area:
             continue
-
-        # Calculate circularity
         perimeter = cv2.arcLength(cnt, True)
         if perimeter == 0:
             continue
         circularity = 4 * pi * area / (perimeter**2)
-
         if circularity > circularity_threshold:
-            # Draw contour
-            print("area:", area)
-            print("Circularity: ", circularity)
-            cv2.drawContours(original, [cnt], -1, (255, 0, 0), 2)
-
-            # Draw Target
             x, y, w, h = cv2.boundingRect(cnt)
-            cv2.line(
-                original,
-                (x + int(w / 2), y + int(h / 4)),
-                (x + int(w / 2), y + int(3 * h / 4)),
-                255,
-            )  # Vertical Line
-            cv2.line(
-                original,
-                (x + int(w / 4), y + int(h / 2)),
-                (x + int(3 * w / 4), y + int(h / 2)),
-                255,
-            )  # Horizontal Line
-            mid_points.append((x + int(w / 2), y + int(h / 2)))
+            cv2.drawContours(img, [cnt], -1, (0, 255, 0), 2)
+            draw_target(img, x, y, w, h)
+            result.append((x + w // 2, y + h // 2))
+    return result
 
-            # Create mask for the grape
-            mask = np.zeros_like(gray)
-            cv2.drawContours(mask, [cnt], -1, 255, -1)
 
-        # Get color values within the contour
+def detect(img):
+    original = img.copy()
+    mid_points = []
 
-        # mean_val = cv2.mean(hsv, mask=mask)
-        # min_val = np.min(hsv[mask == 255], axis=0)
-        # max_val = np.max(hsv[mask == 255], axis=0)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-        # # Store color values
+    lower_strawberry1 = np.array([0, 100, 80])
+    upper_strawberry1 = np.array([10, 255, 255])
+    lower_strawberry2 = np.array([160, 100, 80])
+    upper_strawberry2 = np.array([179, 255, 255])
 
-        # all_h.extend([min_val[0], max_val[0], mean_val[0]])
-        # all_s.extend([min_val[1], max_val[1], mean_val[1]])
-        # all_v.extend([min_val[2], max_val[2], mean_val[2]])
-        # # Calculate overall color range
-        # if len(all_h) > 0:
-        #     h_range = (np.min(all_h), np.max(all_h))
-        #     s_range = (np.min(all_s), np.max(all_s))
-        #     v_range = (np.min(all_v), np.max(all_v))
-        # cv2.imshow("Detected Grapes", original)
-        # cv2.imshow("Edge Detection", closed)
-        # cv2.waitKey(1)
-        # return [h_range, s_range, v_range]
-        # else:
-        # return None
-    # Display results
-    cv2.imshow("Detected Grapes", original)
-    cv2.imshow("Edge Detection", closed)
+    lower_blackberry = np.array([120, 50, 0])
+    upper_blackberry = np.array([180, 255, 80])
+
+    mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
+    mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
+    mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
+
+    mask_blackberry = cv2.inRange(hsv, lower_blackberry, upper_blackberry)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    mask_strawberry = cv2.morphologyEx(
+        mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
+    mask_blackberry = cv2.morphologyEx(
+        mask_blackberry, cv2.MORPH_CLOSE, kernel, iterations=2)
+
+    contours_strawberry, _ = cv2.findContours(
+        mask_strawberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_blackberry, _ = cv2.findContours(
+        mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    midpoints_strawberry = contour_check(original, contours_strawberry, 5000)
+    midpoints_blackberry = contour_check(original, contours_blackberry, 1000)
+
+    mid_points.extend(midpoints_strawberry)
+    mid_points.extend(midpoints_blackberry)
+
+    # Display the results
+    cv2.imshow("Detected Fruits", original)
+    cv2.imshow("Strawberry Mask", mask_strawberry)
+    cv2.imshow("Blackberry Mask", mask_blackberry)
     cv2.waitKey(1)
+
     return mid_points
 
 
@@ -122,7 +97,6 @@ def vision_setup():
     pipeline_wrapper = rs.pipeline_wrapper(pipeline)
     pipeline_profile = config.resolve(pipeline_wrapper)
     device = pipeline_profile.get_device()
-    device_product_line = str(device.get_info(rs.camera_info.product_line))
 
     found_rgb = False
     for s in device.sensors:
@@ -148,16 +122,18 @@ def get_color_image(pipeline):
 
 
 if __name__ == "__main__":
-    pipeline = vision_setup()
-    try:
-        while True:
-            color_image = get_color_image(pipeline)
-            mid_point = detect_and_log_grape_properties(color_image)
-            print(mid_point)
+    # pipeline = vision_setup()
+    # try:
+    #     while True:
+    #         color_image = get_color_image(pipeline)
+    #         mid_point = detect_and_log_grape_properties(color_image)
+    #         print(mid_point)
 
-    finally:
-        pipeline.stop()
+    # finally:
+    #     pipeline.stop()
+    image = cv2.imread(
+        '/Users/perrintong/Documents/18-578/Mechatronics-team/capstone/vision/rs.png')
     # image = cv2.imread('/Users/perrintong/Desktop/fruitEw.png')
-    # mid_point = detect_and_log_grape_properties(image)
-    # while True:
-        # pass
+    mid_point = detect(image)
+    while True:
+        pass
