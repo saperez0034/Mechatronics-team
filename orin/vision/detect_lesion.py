@@ -85,9 +85,9 @@ def detect_and_log_grape_properties(img):
                 v_range = (np.min(all_v), np.max(all_v))
                 result.insert(0,  [h_range, s_range, v_range, mid_point])
     # Display results
-    cv2.imshow("Detected Grapes", original)
+    # cv2.imshow("Detected Grapes", original)
     # cv2.imshow("Edge Detection", edges)
-    cv2.waitKey(1)
+    # cv2.waitKey(1)
     return result
     # return mid_point
 

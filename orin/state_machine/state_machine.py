@@ -1,7 +1,7 @@
 import vision.detect_lesion as detect_lesion
 import stm32.stm32_serial as stm32
 import time
-import pid.pid
+from pid.pid_controller import pid_controller
 
 class StateMachine:
     def __init__(self):
@@ -20,7 +20,7 @@ class StateMachine:
         self.lesion_midpoint = None
         self.pid_error_x = 0
         self.pid_error_y = 0
-        self.kp = 0
+        self.kp = 1
         self.ki = 0
         self.kd = 0
         self.i_x = 0
@@ -51,15 +51,15 @@ class StateMachine:
         for i in range(3):
             stm32.send_data(self.ser, "\r")
         
-        self.move_x(self, -1000000) # Resetting the End effector to Origin
-        self.move_y(self, -1000000)
+        # self.move_x(-1000000) # Resetting the End effector to Origin
+        # self.move_y(-1000000)
 
-        self.lin_stepper(self, 0) # Moving end effector to the top
-        self.lin_act(self, 1) # Priming needle
+        self.lin_stepper(0) # Moving end effector to the top
+        self.lin_act(1) # Priming needle
 
-        time.sleep(15)
+        time.sleep(2)
 
-        self.move_x(self, self.stepperX_midpoint_steps)
+        self.move_x(self.stepperX_midpoint_steps)
         self.total_steps_x += self.stepperX_midpoint_steps
         
         self.current_state = 'DETECTING'
@@ -69,46 +69,48 @@ class StateMachine:
         color_image = detect_lesion.get_color_image(self.pipeline)
         result = detect_lesion.detect_and_log_grape_properties(color_image)
         # Transition to the next state
-        if result is None:
-            self.move_y(self, 100)
-            self.total_steps_y += 100
+        if result == []:
+            self.move_y(10)
+            self.total_steps_y += 10
             self.current_state = 'DETECTING'
         else:
-            self.lesion_midpoint = result
+            self.lesion_midpoint = result[0][3]
             self.current_state = 'PROCESSING'
 
     def processing_state(self):
         print("Processing state")
-        if (self.pid_error_x > 0.1):
-            self.step_x, self.pid_error_x, self.i_x = pid.pid_controller(
-                        self.needle_x, self.lesion_midpoint[0], self.kp, self.ki, 
-                        self.kd, self.pid_error_x, self.i_x, self.dt)
-            self.move_x(self, self.step_x)
-            self.total_steps_x += self.step_x
-        if (self.pid_error_y > 0.1):
-            self.step_y, self.pid_error_x, self.i_x = pid.pid_controller(
+        # if (self.pid_error_x > 0.1 or self.pid_error_x == 0):
+        #    self.step_x, self.pid_error_x, self.i_x = pid.pid_controller(
+        #                self.needle_x, self.lesion_midpoint[0], self.kp, self.ki, 
+        #                self.kd, self.pid_error_x, self.i_x, self.dt)
+        #    self.move_x(self, self.step_x)
+        #    self.total_steps_x += self.step_x
+        if (self.pid_error_y > 0.1 or self.pid_error_y == 0):
+            self.step_y, self.pid_error_y, self.i_y = pid_controller(
                         self.needle_y, self.lesion_midpoint[0], self.kp, self.ki, 
                         self.kd, self.pid_error_y, self.i_y, self.dt)
-            self.move_y(self, self.step_y)
+            print(self.pid_error_y)
+            self.move_y(self.step_y)
             self.total_steps_y += self.step_y
-        if (self.pid_error_x < 0.1 and self.pid_error_y < 0.1):
+        if (self.pid_error_x < 10 and self.pid_error_y < 10):
             self.current_state = 'EXTRACT_SAMPLE'
-        self.current_state = 'DETECTING'
+        else: 
+            self.current_state = 'DETECTING'
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_stepper(self, 100)
+        self.lin_stepper(100)
         time.sleep(10)
-        self.lin_act(self, 0)
+        self.lin_act(0)
         time.sleep(1)
-        self.lin_stepper(self, 0)
+        self.lin_stepper(0)
         time.sleep(10)
         self.current_state = 'FINAL'
 
     def final_state(self):
         print("Final state")
-        self.move_x(self, -self.total_steps_x)
-        self.move_y(self, -self.total_steps_y)
+        self.move_x(-self.total_steps_x)
+        self.move_y(-self.total_steps_y)
         time.sleep(30)
         self.lin_act(self, 1)
     
