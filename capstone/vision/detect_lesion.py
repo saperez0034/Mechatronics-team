@@ -4,6 +4,7 @@ try:
 except ImportError:
     print("pyrealsense2 not found. Make sure to install the RealSense SDK.")
 import numpy as np
+import time
 from math import pi
 
 
@@ -41,6 +42,20 @@ def contour_check(img, contours, min_area):
             result.append((x + w // 2, y + h // 2))
     return result
 
+def same_location(location1, location2):
+    TOLERANCE = 5
+
+    return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE 
+
+def detect_stable_location(pipeline):
+    img1 = get_color_image(pipeline)
+    location1 = detect(img1)
+    location2 = (0,0)
+    if location1 != []:
+        time.sleep(0.1)
+        img2 = get_color_image(pipeline)
+        location2 = detect(img2)
+    return 
 
 def detect(img):
     original = img.copy()

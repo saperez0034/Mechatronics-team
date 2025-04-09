@@ -9,6 +9,19 @@ def send_data(str, ser):
         ser.write(ch.encode("utf-8"))
         time.sleep(0.01)
 
+def move_x(step, ser):
+    send_data("stepx " + str(step), ser)
+
+def move_y(step, ser):
+    send_data("stepy " + str(step), ser)
+
+def move_rot_servo(angle, ser):
+    send_data("servo_rot " + str(angle), ser)
+
+def move_lin_servo(pctg, ser):
+    send_data("servp_lin " + str(pctg), ser)
+
+
 
 # if __name__ == "__main__":
 def motor_setup():

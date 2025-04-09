@@ -2,6 +2,8 @@ import vision.detect_lesion as detect_lesion
 import motor.motor_control as motor_control
 import time
 
+NEEDLE_LOCATION = (250, 336)
+
 class StateMachine:
     def __init__(self):
         self.states = {
@@ -16,6 +18,8 @@ class StateMachine:
         self.h_range = None
         self.s_range = None
         self.v_range = None
+        self.stable_location = None
+        self.current_location = None
         self.led_command = "toggleled\r"
 
     def initial_state(self):
@@ -28,12 +32,12 @@ class StateMachine:
     def detecting_state(self):
         print("Detecting state")
         color_image = detect_lesion.get_color_image(self.pipeline)
-        result = detect_lesion.detect_and_log_grape_properties(color_image)
+        result = detect_lesion.detect(color_image)
         # Transition to the next state
-        if result is None:
+        if result == []:
             self.current_state = 'DETECTING'
         else:
-            self.h_range, self.s_range, self.v_range = result
+            self.stable_location = result
             print("Detected Grape Color Ranges (HSV):")
             print(f"Hue: {self.h_range[0]:.2f} - {self.h_range[1]:.2f}")
             print(f"Saturation: {self.s_range[0]:.2f} - {self.s_range[1]:.2f}")
@@ -44,7 +48,7 @@ class StateMachine:
         print("Processing state")
         # Add processing logic here
         # Transition to the next state
-        motor_control.send_data(self.ser, self.led_command)
+        
         self.current_state = 'FINAL'
         time.sleep(5)
 
