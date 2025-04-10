@@ -4,6 +4,7 @@ import time
 
 NEEDLE_LOCATION = (250, 336)
 
+
 class StateMachine:
     def __init__(self):
         self.states = {
@@ -31,24 +32,23 @@ class StateMachine:
 
     def detecting_state(self):
         print("Detecting state")
-        color_image = detect_lesion.get_color_image(self.pipeline)
-        result = detect_lesion.detect(color_image)
+        result = detect_lesion.detect_stable_location(self.pipeline)
         # Transition to the next state
         if result == []:
             self.current_state = 'DETECTING'
         else:
             self.stable_location = result
-            print("Detected Grape Color Ranges (HSV):")
-            print(f"Hue: {self.h_range[0]:.2f} - {self.h_range[1]:.2f}")
-            print(f"Saturation: {self.s_range[0]:.2f} - {self.s_range[1]:.2f}")
-            print(f"Value: {self.v_range[0]:.2f} - {self.v_range[1]:.2f}")
+            # print("Detected Grape Color Ranges (HSV):")
+            # print(f"Hue: {self.h_range[0]:.2f} - {self.h_range[1]:.2f}")
+            # print(f"Saturation: {self.s_range[0]:.2f} - {self.s_range[1]:.2f}")
+            # print(f"Value: {self.v_range[0]:.2f} - {self.v_range[1]:.2f}")
             self.current_state = 'PROCESSING'
 
     def processing_state(self):
         print("Processing state")
         # Add processing logic here
         # Transition to the next state
-        
+
         self.current_state = 'FINAL'
         time.sleep(5)
 
@@ -69,4 +69,3 @@ class StateMachine:
 if __name__ == "__main__":
     state_machine = StateMachine()
     state_machine.run()
-    
