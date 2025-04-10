@@ -1,0 +1,2 @@
+../Core/Src/stepper.c:5:6:vStepperControlX	16	static
+../Core/Src/stepper.c:30:6:vStepperControlY	16	static

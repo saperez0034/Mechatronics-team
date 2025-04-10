@@ -1,0 +1,3 @@
+../Core/Src/actuators.c:6:6:vServoControl	16	static
+../Core/Src/actuators.c:20:6:vLinServoControl	16	static
+../Core/Src/actuators.c:34:6:vLinActControl	16	static
