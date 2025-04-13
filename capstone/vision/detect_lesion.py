@@ -101,10 +101,10 @@ def detect(img):
     mid_points.extend(midpoints_blackberry)
 
     # Display the results
-    cv2.imshow("Detected Fruits", original)
-    cv2.imshow("Strawberry Mask", mask_strawberry)
-    cv2.imshow("Blackberry Mask", mask_blackberry)
-    cv2.waitKey(1)
+    # cv2.imshow("Detected Fruits", original)
+    # cv2.imshow("Strawberry Mask", mask_strawberry)
+    # cv2.imshow("Blackberry Mask", mask_blackberry)
+    # cv2.waitKey(1)
 
     return mid_points
 
