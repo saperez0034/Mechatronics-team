@@ -52,6 +52,7 @@ def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
     location1 = detect(img1)
     location2 = (-1, -1)
+    print(location1)
     if location1 != (-1, -1):
         time.sleep(1.1)
         img2 = get_color_image(pipeline)
@@ -59,7 +60,7 @@ def detect_stable_location(pipeline):
     if same_location(location1, location2):
         return location1
     else:
-        return []
+        return (-1, -1)
 
 
 def detect(img):
@@ -112,7 +113,7 @@ def detect(img):
     cv2.imshow("Detected Fruits", original)
     cv2.imshow("Strawberry Mask", mask_strawberry)
     cv2.imshow("Blackberry Mask", mask_blackberry)
-    # cv2.waitKey(1)
+    cv2.waitKey(1)
 
     return largest_point
     # return mid_points

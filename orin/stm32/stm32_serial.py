@@ -5,7 +5,8 @@ import time
 
 
 def send_data(ser, str):
-    for ch in str:
+    new_str = "cls\r" + str
+    for ch in new_str:
         ser.write(ch.encode("utf-8"))
         time.sleep(0.01)
     time.sleep(0.01)
