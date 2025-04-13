@@ -30,7 +30,6 @@ def contour_check(img, contours, min_area):
         area = cv2.contourArea(cnt)
         if area < min_area:
             continue
-        print(area)
         perimeter = cv2.arcLength(cnt, True)
         if perimeter == 0:
             continue
@@ -39,12 +38,12 @@ def contour_check(img, contours, min_area):
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.drawContours(img, [cnt], -1, (0, 255, 0), 2)
             draw_target(img, x, y, w, h)
-            result.append((x + w // 2, y + h // 2))
+            result.append(cnt)
     return result
 
 
 def same_location(location1, location2):
-    TOLERANCE = 5 # placeholder
+    TOLERANCE = 5
 
     return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE
 
@@ -52,9 +51,9 @@ def same_location(location1, location2):
 def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
     location1 = detect(img1)
-    location2 = (0, 0)
-    if location1 != []:
-        time.sleep(0.1)
+    location2 = (-1, -1)
+    if location1 != (-1, -1):
+        time.sleep(1.1)
         img2 = get_color_image(pipeline)
         location2 = detect(img2)
     if same_location(location1, location2):
@@ -65,7 +64,6 @@ def detect_stable_location(pipeline):
 
 def detect(img):
     original = img.copy()
-    mid_points = []
 
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -94,19 +92,30 @@ def detect(img):
     contours_blackberry, _ = cv2.findContours(
         mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    midpoints_strawberry = contour_check(original, contours_strawberry, 550)
-    midpoints_blackberry = contour_check(original, contours_blackberry, 280)
+    valid_strawberry_contours = contour_check(
+        original, contours_strawberry, 550)
+    valid_blackberry_contours = contour_check(
+        original, contours_blackberry, 280)
 
-    mid_points.extend(midpoints_strawberry)
-    mid_points.extend(midpoints_blackberry)
+    largest_area = 0
+    largest_point = (-1, -1)
+    # mid_points.extend(midpoints_strawberry)
+    # mid_points.extend(midpoints_blackberry)
+    for cnt in valid_strawberry_contours + valid_blackberry_contours:
+        area = cv2.contourArea(cnt)
+        if area > largest_area:
+            largest_area = area
+            x, y, w, h = cv2.boundingRect(cnt)
+            largest_point = (x + w // 2, y + h // 2)
 
     # Display the results
     cv2.imshow("Detected Fruits", original)
     cv2.imshow("Strawberry Mask", mask_strawberry)
     cv2.imshow("Blackberry Mask", mask_blackberry)
-    cv2.waitKey(1)
+    # cv2.waitKey(1)
 
-    return mid_points
+    return largest_point
+    # return mid_points
 
 
 def vision_setup():

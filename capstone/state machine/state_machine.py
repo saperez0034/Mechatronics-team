@@ -29,12 +29,12 @@ class StateMachine:
         self.pipeline = detect_lesion.vision_setup()
         self.ser = motor_control.motor_setup()
         self.current_state = 'DETECTING'
+        print("Detecting state")
 
     def detecting_state(self):
-        print("Detecting state")
         result = detect_lesion.detect_stable_location(self.pipeline)
         # Transition to the next state
-        if result == []:
+        if result == (-1, -1):
             self.current_state = 'DETECTING'
         else:
             self.stable_location = result

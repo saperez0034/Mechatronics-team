@@ -52,9 +52,9 @@ def same_location(location1, location2):
 def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
     location1 = detect(img1)
-    location2 = (0, 0)
-    if location1 != []:
-        time.sleep(0.1)
+    location2 = (-1, -1)
+    if location1 != (-1, -1):
+        time.sleep(1.1)
         img2 = get_color_image(pipeline)
         location2 = detect(img2)
     if same_location(location1, location2):
@@ -97,16 +97,25 @@ def detect(img):
     midpoints_strawberry = contour_check(original, contours_strawberry, 550)
     midpoints_blackberry = contour_check(original, contours_blackberry, 280)
 
-    mid_points.extend(midpoints_strawberry)
-    mid_points.extend(midpoints_blackberry)
+    largest_area = 0
+    largest_point = (-1, -1)
+    # mid_points.extend(midpoints_strawberry)
+    # mid_points.extend(midpoints_blackberry)
+    for cnt in contours_strawberry + contours_blackberry:
+        area = cv2.contourArea(cnt)
+        if area > largest_area:
+            largest_area = area
+            x, y, w, h = cv2.boundingRect(cnt)
+            largest_point = (x + w // 2, y + h // 2)
 
+    return largest_point
     # Display the results
     # cv2.imshow("Detected Fruits", original)
     # cv2.imshow("Strawberry Mask", mask_strawberry)
     # cv2.imshow("Blackberry Mask", mask_blackberry)
     # cv2.waitKey(1)
 
-    return mid_points
+    # return mid_points
 
 
 def vision_setup():
