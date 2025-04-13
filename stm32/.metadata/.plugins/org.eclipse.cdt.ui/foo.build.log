@@ -1,0 +1,10 @@
+14:06:06 **** Build of configuration Debug for project foo ****
+make -j20 all 
+arm-none-eabi-size  foo.elf 
+   text	   data	    bss	    dec	    hex	filename
+   4688	     12	   1572	   6272	   1880	foo.elf
+Finished building: default.size.stdout
+ 
+
+14:06:06 Build Finished. 0 errors, 0 warnings. (took 184ms)
+

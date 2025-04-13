@@ -1,0 +1,10 @@
+00:29:58 **** Incremental Build of configuration Debug for project casptone_test ****
+make -j20 all 
+arm-none-eabi-size  casptone_test.elf 
+   text	   data	    bss	    dec	    hex	filename
+   4756	     12	   1572	   6340	   18c4	casptone_test.elf
+Finished building: default.size.stdout
+ 
+
+00:29:58 Build Finished. 0 errors, 0 warnings. (took 188ms)
+
