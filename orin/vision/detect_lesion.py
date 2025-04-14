@@ -23,9 +23,8 @@ def draw_target(img, x, y, w, h):
     )  # Horizontal Line
 
 
-def contour_check(img, contours, min_area):
+def contour_check(img, contours, min_area, circularity_threshold):
     result = []
-    circularity_threshold = 0.4
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area < min_area:
@@ -94,9 +93,9 @@ def detect(img):
         mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     valid_strawberry_contours = contour_check(
-        original, contours_strawberry, 550)
+        original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 280)
+        original, contours_blackberry, 350, 0.7)
 
     largest_area = 0
     largest_point = (-1, -1)

@@ -58,9 +58,6 @@ class StateMachine:
 
         # self.move_x(-1000000) # Resetting the End effector to Origin
         # self.move_y(-1000000)import vision.detect_lesion as detect_lesion
-import stm32.stm32_serial as stm32
-import time
-from pid.pid_controller import pid_controller
 
 
 class StateMachine:
@@ -90,6 +87,7 @@ class StateMachine:
         self.step_y = 0
         self.y_dir = False
         self.x_dir = True
+        self.xy_limit = 4800
         self.total_steps_x = 0
         self.total_steps_y = 0
         self.stepperX_midpoint_steps = 100
@@ -134,37 +132,14 @@ class StateMachine:
         # Transition to the next state
         if result == (-1, -1):
             print("nothing")
-            self.move_x(10 if self.x_dir else -10)
-            self.total_steps_x += (10 if self.x_dir else -10)
-            if self.total_steps_x == 5000 or self.total_steps_x == 0:
-                self.x_dir = not self.x_dir
-                self.move_y(10 if self.y_dir else -10)
-                self.total_steps_y += (10 if self.y_dir else -10)
-
-        self.lin_servo(0)  # Moving end effector to the top
-        self.lin_act(0)  # Priming needle
-
-        # time.sleep(10)
-
-        # self.move_x(self.stepperX_midpoint_steps)
-        # self.total_steps_x += self.stepperX_midpoint_steps
-
-        self.current_state = 'DETECTING'
-        print("Detecting state")
-
-    def detecting_state(self):
-        result = detect_lesion.detect_stable_location(self.pipeline)
-        # Transition to the next state
-        if result == (-1, -1):
-            print("nothing")
             self.move_x(100 if self.x_dir else -100)
             self.total_steps_x += (100 if self.x_dir else -100)
-            if self.total_steps_x == 5000 or self.total_steps_x == 0:
+            if self.total_steps_x == self.xy_limit or self.total_steps_x == 0:
                 self.x_dir = not self.x_dir
                 self.move_y(100 if self.y_dir else -100)
                 self.total_steps_y += (100 if self.y_dir else -100)
-                self.y_dir = not self.y_dir if self.y_dir == 5000 or self.y_dir == 0 else self.y_dir
-            
+                self.y_dir = not self.y_dir if self.y_dir == self.xy_limit or self.y_dir == 0 else self.y_dir
+
             print(self.total_steps_x)
             self.current_state = 'DETECTING'
         else:
