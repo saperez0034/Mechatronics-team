@@ -1,119 +1,14 @@
-09:15:39 **** Incremental Build of configuration Debug for project cli_and_motors ****
+20:58:02 **** Incremental Build of configuration Debug for project cli_and_motors ****
 make -j20 all 
-arm-none-eabi-gcc "../Core/Src/cli_app.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xE -DSTM32_THREAD_SAFE_STRATEGY=4 -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../Core/ThreadSafe -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/cli_app.d" -MT"Core/Src/cli_app.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/cli_app.o"
-../Core/Src/cli_app.c: In function 'cmd_add':
-../Core/Src/cli_app.c:101:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  101 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Core/Src/cli_app.c:110:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  110 |     pcParameter2 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Core/Src/cli_app.c: In function 'cmd_stepx':
-../Core/Src/cli_app.c:141:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  141 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-In file included from ../Core/Src/cli_app.c:6:
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:153:5: note: in expansion of macro 'xTaskNotify'
-  153 |     xTaskNotify(stepperXTaskHandle, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
-../Core/Src/cli_app.c: In function 'cmd_stepy':
-../Core/Src/cli_app.c:165:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  165 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:177:5: note: in expansion of macro 'xTaskNotify'
-  177 |     xTaskNotify(stepperYTaskHandle, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
-../Core/Src/cli_app.c: In function 'cmd_servo_rot':
-../Core/Src/cli_app.c:189:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  189 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:201:5: note: in expansion of macro 'xTaskNotify'
-  201 |     xTaskNotify(rotServoTaskHandle, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
-../Core/Src/cli_app.c: In function 'cmd_servo_rot2':
-../Core/Src/cli_app.c:213:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  213 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:225:5: note: in expansion of macro 'xTaskNotify'
-  225 |     xTaskNotify(rotServoTaskHandle2, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
-../Core/Src/cli_app.c: In function 'cmd_servo_lin':
-../Core/Src/cli_app.c:237:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  237 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:249:5: note: in expansion of macro 'xTaskNotify'
-  249 |     xTaskNotify(linServoTaskHandle, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
-../Core/Src/cli_app.c: In function 'cmd_lin_act':
-../Core/Src/cli_app.c:261:18: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-  261 |     pcParameter1 = FreeRTOS_CLIGetParameter
-      |                  ^
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1854:76: warning: passing argument 1 of 'xTaskGenericNotify' makes pointer from integer without a cast [-Wint-conversion]
- 1854 | #define xTaskNotify( xTaskToNotify, ulValue, eAction ) xTaskGenericNotify( ( xTaskToNotify ), ( ulValue ), ( eAction ), NULL )
-      |                                                                            ^~~~~~~~~~~~~~~~~
-      |                                                                            |
-      |                                                                            int
-../Core/Src/cli_app.c:273:5: note: in expansion of macro 'xTaskNotify'
-  273 |     xTaskNotify(linActTaskHandle, xValue1, eSetValueWithOverwrite);
-      |     ^~~~~~~~~~~
-../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:1853:45: note: expected 'TaskHandle_t' {aka 'struct tskTaskControlBlock *'} but argument is of type 'int'
- 1853 | BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction, uint32_t *pulPreviousNotificationValue ) PRIVILEGED_FUNCTION;
-      |                                ~~~~~~~~~~~~~^~~~~~~~~~~~~
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F401xE -DSTM32_THREAD_SAFE_STRATEGY=4 -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../Core/ThreadSafe -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
 arm-none-eabi-gcc -o "cli_and_motors.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Sebastian\Desktop\Capstone\Mechatronics-team\stm32\cli_and_motors\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="cli_and_motors.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 Finished building target: cli_and_motors.elf
  
 arm-none-eabi-size  cli_and_motors.elf 
 arm-none-eabi-objdump -h -S cli_and_motors.elf  > "cli_and_motors.list"
    text	   data	    bss	    dec	    hex	filename
-  38064	    128	  21360	  59552	   e8a0	cli_and_motors.elf
+  37984	    128	  21360	  59472	   e850	cli_and_motors.elf
 Finished building: default.size.stdout
  
 Finished building: cli_and_motors.list
- 
-09:15:41 **** Incremental Build of configuration Debug for project cli_and_motors ****
-make -j20 all 
-arm-none-eabi-size  cli_and_motors.elf 
-   text	   data	    bss	    dec	    hex	filename
-  38064	    128	  21360	  59552	   e8a0	cli_and_motors.elf
-Finished building: default.size.stdout
  
