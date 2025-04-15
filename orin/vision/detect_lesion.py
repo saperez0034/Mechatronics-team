@@ -94,7 +94,7 @@ def detect(img):
     valid_strawberry_contours = contour_check(
         original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 150, 0.3)
+        original, contours_blackberry, 200, 0.3)
 
     largest_area = 0
     largest_point = (-1, -1)

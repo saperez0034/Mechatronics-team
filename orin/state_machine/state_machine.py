@@ -17,64 +17,8 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 229
-        self.needle_y = 319
-        self.pid_error_x = 0
-        self.pid_error_y = 0
-        self.kp = 1
-        self.ki = 0
-        self.kd = 0
-        self.i_x = 0
-        self.i_y = 0
-        self.dt = 0.1
-        self.step_x = 0
-        self.step_y = 0
-        self.y_dir = False
-        self.x_dir = True
-        self.total_steps_x = 0
-        self.total_steps_y = 0
-        self.stepperX_midpoint_steps = 100
-        self.stable_location = None
-        self.current_location = None
-
-    def move_x(self, steps):
-        stm32.send_data(self.ser, 'stepx ' + str(steps) + '\r')
-
-    def move_y(self, steps):
-        stm32.send_data(self.ser, 'stepy ' + str(steps) + '\r')
-
-    def lin_servo(self, pctg):
-        stm32.send_data(self.ser, 'servo_rot ' + str(pctg) + '\r')
-
-    def lin_act(self, ext):
-        stm32.send_data(self.ser, 'lin_act ' + str(ext) + '\r')
-
-    def initial_state(self):
-        print("Initial state")
-        self.pipeline = detect_lesion.vision_setup()
-        self.ser = stm32.stm32_setup()
-        for i in range(3):
-            stm32.send_data(self.ser, "\r")
-
-        # self.move_x(-1000000) # Resetting the End effector to Origin
-        # self.move_y(-1000000)import vision.detect_lesion as detect_lesion
-
-
-class StateMachine:
-    def __init__(self):
-        self.states = {
-            'INITIAL': self.initial_state,
-            'DETECTING': self.detecting_state,
-            'PROCESSING': self.processing_state,
-            'BREATHING': self.breathing_state,
-            'EXTRACT_SAMPLE': self.extract_sample_state,
-            'FINAL': self.final_state
-        }
-        self.current_state = 'INITIAL'
-        self.pipeline = None
-        self.ser = None
-        self.needle_x = 319
-        self.needle_y = 289
+        self.needle_x = 315
+        self.needle_y = 270
         self.pid_error_x = 0
         self.pid_error_y = 0
         self.kp = 0.8
@@ -87,7 +31,7 @@ class StateMachine:
         self.step_y = 0
         self.y_dir = True
         self.x_dir = True
-        self.xy_limit = 4500
+        self.xy_limit = 4800
         self.total_steps_x = 0
         self.total_steps_y = 0
         self.stepperX_midpoint_steps = 100
@@ -101,7 +45,7 @@ class StateMachine:
         stm32.send_data(self.ser, 'stepy ' + str(steps) + '\r')
 
     def lin_servo(self, pctg):
-        stm32.send_data(self.ser, 'servo_rot ' + str(pctg) + '\r')
+        stm32.send_data(self.ser, 'servo_lin ' + str(pctg) + '\r')
 
     def lin_act(self, ext):
         stm32.send_data(self.ser, 'lin_act ' + str(ext) + '\r')
@@ -113,14 +57,14 @@ class StateMachine:
         for i in range(3):
             stm32.send_data(self.ser, "\r")
 
-        # self.move_x(-5000) # Resetting the End effector to Origin
-        # self.move_y(-5000)
-        # time.sleep(5)
+        self.move_x(-5000) # Resetting the End effector to Origin
+        self.move_y(-5000)
+        time.sleep(5)
         self.lin_servo(90)
         time.sleep(1)
         self.lin_servo(0)  # Moving end effector to the top
         time.sleep(2)
-        self.lin_act(1)
+        self.lin_act(0)
         time.sleep(1)
 
         # self.move_x(self.stepperX_midpoint_steps)
@@ -199,7 +143,7 @@ class StateMachine:
                 pass
 
     def breathing_state(self):
-        self.lin_servo(120)
+        self.lin_servo(75)
         time.sleep(5)
         img = detect_lesion.get_color_image(self.pipeline)
         result = detect_lesion.detect(img)
@@ -210,9 +154,9 @@ class StateMachine:
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_servo(180)
+        self.lin_servo(100)
         time.sleep(1)
-        self.lin_act(0)
+        self.lin_act(1)
         time.sleep(0.5)
         self.lin_servo(0)
         time.sleep(2)
