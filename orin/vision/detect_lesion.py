@@ -42,7 +42,7 @@ def contour_check(img, contours, min_area, circularity_threshold):
 
 
 def same_location(location1, location2):
-    TOLERANCE = 10
+    TOLERANCE = 15
 
     return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE
 
@@ -80,7 +80,7 @@ def detect(img):
 
     mask_blackberry = cv2.inRange(hsv, lower_blackberry, upper_blackberry)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     mask_strawberry = cv2.morphologyEx(
         mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
     mask_blackberry = cv2.morphologyEx(
@@ -94,7 +94,7 @@ def detect(img):
     valid_strawberry_contours = contour_check(
         original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 200, 0.3)
+        original, contours_blackberry, 150, 0.3)
 
     largest_area = 0
     largest_point = (-1, -1)
