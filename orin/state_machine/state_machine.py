@@ -17,8 +17,8 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 250
-        self.needle_y = 336
+        self.needle_x = 229
+        self.needle_y = 319
         self.pid_error_x = 0
         self.pid_error_y = 0
         self.kp = 1
@@ -73,21 +73,21 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 250
-        self.needle_y = 336
+        self.needle_x = 319
+        self.needle_y = 289
         self.pid_error_x = 0
         self.pid_error_y = 0
-        self.kp = 1
-        self.ki = 0
-        self.kd = 0
+        self.kp = 0.8
+        self.ki = 0.5
+        self.kd = 0.2
         self.i_x = 0
         self.i_y = 0
         self.dt = 0.1
         self.step_x = 0
         self.step_y = 0
-        self.y_dir = False
+        self.y_dir = True
         self.x_dir = True
-        self.xy_limit = 4800
+        self.xy_limit = 4500
         self.total_steps_x = 0
         self.total_steps_y = 0
         self.stepperX_midpoint_steps = 100
@@ -113,13 +113,15 @@ class StateMachine:
         for i in range(3):
             stm32.send_data(self.ser, "\r")
 
-        # self.move_x(-1000000) # Resetting the End effector to Origin
-        # self.move_y(-1000000)
-
+        # self.move_x(-5000) # Resetting the End effector to Origin
+        # self.move_y(-5000)
+        # time.sleep(5)
+        self.lin_servo(90)
+        time.sleep(1)
         self.lin_servo(0)  # Moving end effector to the top
-        self.lin_act(0)  # Priming needle
-
-        time.sleep(10)
+        time.sleep(2)
+        self.lin_act(1)
+        time.sleep(1)
 
         # self.move_x(self.stepperX_midpoint_steps)
         # self.total_steps_x += self.stepperX_midpoint_steps
@@ -136,10 +138,10 @@ class StateMachine:
             self.total_steps_x += (100 if self.x_dir else -100)
             if self.total_steps_x == self.xy_limit or self.total_steps_x == 0:
                 self.x_dir = not self.x_dir
-                self.move_y(100 if self.y_dir else -100)
-                self.total_steps_y += (100 if self.y_dir else -100)
+                self.move_y(1000 if self.y_dir else -1000)
+                self.total_steps_y += (1000 if self.y_dir else -1000)
                 self.y_dir = not self.y_dir if self.y_dir == self.xy_limit or self.y_dir == 0 else self.y_dir
-
+                time.sleep(2)
             print(self.total_steps_x)
             self.current_state = 'DETECTING'
         else:
@@ -154,43 +156,76 @@ class StateMachine:
             self.step_x, self.pid_error_x, self.i_x = pid_controller(
                 self.needle_x, self.stable_location[0], self.kp, self.ki,
                 self.kd, self.pid_error_x, self.i_x, self.dt)
-            self.move_x(self.step_x)
-            self.total_steps_x += self.step_x
+            if (self.step_x + self.total_steps_y >= self.xy_limit):
+                self.step_x = self.xy_limit - self.total_steps_y
+                print("error in y high lim")
+            if (self.step_x + self.total_steps_y <= 0):
+                self.step_x = -1 * self.total_steps_y
+                print("error in y low lim")
+            print("move y: "+ str(self.step_x))
+            self.move_y(self.step_x)
+            self.total_steps_y += self.step_x
         if (self.pid_error_y > 0.1 or self.pid_error_y == 0):
             self.step_y, self.pid_error_y, self.i_y = pid_controller(
                 self.needle_y, self.stable_location[1], self.kp, self.ki,
                 self.kd, self.pid_error_y, self.i_y, self.dt)
-            print(self.pid_error_y)
-            self.move_y(self.step_y)
-            self.total_spipelineteps_y += self.step_y
-        if (self.pid_error_x < 10 and self.pid_error_y < 10):
-            self.lin_servo(80)
+            if (self.step_y + self.total_steps_x >= self.xy_limit):
+                self.step_y = self.xy_limit - self.total_steps_x
+                print("error in x high lim")
+            if (self.step_y + self.total_steps_x <= 0):
+                self.step_y = -1 * self.total_steps_x
+                print("error in x low lim")
+            print("move x: "+ str(self.step_y))
+            self.move_x(self.step_y)
+            self.total_steps_x += self.step_y
+        # self.move_x(5 * (self.needle_y - self.stable_location[1]))
+        # self.move_y(5 * (self.needle_x - self.stable_location[0]))
+        time.sleep(1.5)
+
+        if(self.pid_error_x < 1 and self.pid_error_y < 1):
+            print(self.stable_location)
             self.current_state = 'BREATHING'
+            print("Breathing")
+        else:
+            counter = 0
+            self.stable_location = detect_lesion.detect_stable_location(self.pipeline)
+            while (self.stable_location == (-1, -1)):
+                self.stable_location = detect_lesion.detect_stable_location(self.pipeline)
+                counter += 1
+                if counter == 20:
+                    self.current_state = 'DETECTING'
+                    print("DETECTING")
+                    break
+                pass
 
     def breathing_state(self):
+        self.lin_servo(120)
+        time.sleep(5)
         img = detect_lesion.get_color_image(self.pipeline)
         result = detect_lesion.detect(img)
-        if detect_lesion.same_location(result, self.stable_location):
+        if detect_lesion.same_location(result, self.stable_location) != (-1, -1):
             self.current_state = 'EXTRACT_SAMPLE'
         else:
             self.current_state = 'BREATHING'
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_servo(100)
-        time.sleep(.5)
-        self.lin_act(1)
+        self.lin_servo(180)
+        time.sleep(1)
+        self.lin_act(0)
         time.sleep(0.5)
         self.lin_servo(0)
-        time.sleep(10)
+        time.sleep(2)
+        self.move_x(-self.total_steps_x)
+        self.move_y(-self.total_steps_y)
         self.current_state = 'FINAL'
 
     def final_state(self):
         print("Final state")
-        self.move_x(-self.total_steps_x)
-        self.move_y(-self.total_steps_y)
-        time.sleep(30)
-        self.lin_act(self, 0)
+        self.total_steps_x == 0
+        self.total_steps_y == 0
+        time.sleep(5)
+        self.lin_act(0)
 
     def run(self):
         while True:

@@ -42,7 +42,7 @@ def contour_check(img, contours, min_area, circularity_threshold):
 
 
 def same_location(location1, location2):
-    TOLERANCE = 5
+    TOLERANCE = 10
 
     return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE
 
@@ -51,7 +51,6 @@ def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
     location1 = detect(img1)
     location2 = (-1, -1)
-    print(location1)
     if location1 != (-1, -1):
         time.sleep(1.1)
         img2 = get_color_image(pipeline)
@@ -95,13 +94,13 @@ def detect(img):
     valid_strawberry_contours = contour_check(
         original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 350, 0.7)
+        original, contours_blackberry, 150, 0.3)
 
     largest_area = 0
     largest_point = (-1, -1)
     # mid_points.extend(midpoints_strawberry)
     # mid_points.extend(midpoints_blackberry)
-    for cnt in valid_strawberry_contours + valid_blackberry_contours:
+    for cnt in valid_blackberry_contours:
         area = cv2.contourArea(cnt)
         if area > largest_area:
             largest_area = area
@@ -110,7 +109,6 @@ def detect(img):
 
     # Display the results
     cv2.imshow("Detected Fruits", original)
-    cv2.imshow("Strawberry Mask", mask_strawberry)
     cv2.imshow("Blackberry Mask", mask_blackberry)
     cv2.waitKey(1)
 
