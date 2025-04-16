@@ -22,11 +22,12 @@ const char * cli_prompt = "\r\ncli> ";
 uint8_t backspace[] = "\b \b";
 uint8_t backspace_tt[] = " \b";
 uint8_t flag = 0;
-extern stepperXTaskHandle;
-extern stepperYTaskHandle;
-extern rotServoTaskHandle;
-extern linServoTaskHandle;
-extern linActTaskHandle;
+extern int stepperXTaskHandle;
+extern int stepperYTaskHandle;
+extern int rotServoTaskHandle;
+extern int rotServoTaskHandle2;
+extern int linServoTaskHandle;
+extern int linActTaskHandle;
 
 int _write(int file, char *data, int len)
 {
@@ -201,6 +202,30 @@ BaseType_t cmd_servo_rot(char *pcWriteBuffer, size_t xWriteBufferLen,
     return pdFALSE;
 }
 //*****************************************************************************
+BaseType_t cmd_servo_rot2(char *pcWriteBuffer, size_t xWriteBufferLen,
+    const char *pcCommandString)
+{
+    char *pcParameter1;
+    BaseType_t xParameter1StringLength;
+
+    /* Obtain the name of the source file, and the length of its name, from
+    the command string. The name of the source file is the first parameter. */
+    pcParameter1 = FreeRTOS_CLIGetParameter
+                        (
+                        /* The command string itself. */
+                        pcCommandString,
+                        /* Return the first parameter. */
+                        1,
+                        /* Store the parameter string length. */
+                        &xParameter1StringLength
+                        );
+    // convert the string to a number
+
+    int32_t xValue1 = strtol(pcParameter1, NULL, 10);
+    xTaskNotify(rotServoTaskHandle2, xValue1, eSetValueWithOverwrite);
+    return pdFALSE;
+}
+//*****************************************************************************
 BaseType_t cmd_servo_lin(char *pcWriteBuffer, size_t xWriteBufferLen,
     const char *pcCommandString)
 {
@@ -291,6 +316,12 @@ const CLI_Command_Definition_t xCommandList[] = {
         .pcCommand = "servo_rot",
         .pcHelpString = "servo_rot: \r\n rotates servo to a given angle\r\n\r\n",
         .pxCommandInterpreter = cmd_servo_rot,
+        .cExpectedNumberOfParameters = 1 
+    },
+    {
+        .pcCommand = "servo_rot2",
+        .pcHelpString = "servo_rot2: \r\n rotates servo 2 to a given angle\r\n\r\n",
+        .pxCommandInterpreter = cmd_servo_rot2,
         .cExpectedNumberOfParameters = 1 
     },
     {

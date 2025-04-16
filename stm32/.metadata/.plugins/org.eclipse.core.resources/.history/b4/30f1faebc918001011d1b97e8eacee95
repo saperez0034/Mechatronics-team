@@ -47,6 +47,9 @@
 
 /* USER CODE BEGIN PV */
 
+volatile uint8_t stepper_x_stop;
+volatile uint8_t stepper_y_stop;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,6 +72,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+  stepper_x_stop = 0;
+  stepper_y_stop = 0;
 
   /* USER CODE END 1 */
 
@@ -138,7 +144,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -148,18 +159,50 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == lim_switch_1_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_1_GPIO_Port, lim_switch_1_Pin) == 1)
+      stepper_x_stop = 1;
+    else
+      stepper_x_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_2_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_2_GPIO_Port, lim_switch_2_Pin) == 1)
+      stepper_y_stop = 1;
+    else
+      stepper_y_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_3_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_3_GPIO_Port, lim_switch_3_Pin) == 1)
+      stepper_x_stop = 1;
+    else
+      stepper_x_stop = 0;
+  }
+  else if (GPIO_Pin == lim_switch_4_Pin)
+  {
+    if (HAL_GPIO_ReadPin(lim_switch_4_GPIO_Port, lim_switch_4_Pin) == 1)
+      stepper_y_stop = 1;
+    else
+      stepper_y_stop = 0;
+  }
+}
 
 /* USER CODE END 4 */
 

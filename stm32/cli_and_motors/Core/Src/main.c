@@ -47,6 +47,14 @@
 
 /* USER CODE BEGIN PV */
 
+volatile uint8_t stepper_x_stop;
+volatile uint8_t stepper_y_stop;
+
+#define DEBOUNCE_DELAY 50 // milliseconds
+
+uint32_t last_debounce_1 = 0;
+uint32_t last_debounce_2 = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,6 +77,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+  stepper_x_stop = 0;
+  stepper_y_stop = 0;
 
   /* USER CODE END 1 */
 
@@ -167,6 +178,35 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  uint32_t now = HAL_GetTick();
+
+  if (GPIO_Pin == lim_switch_1_Pin)
+  {
+//    if ((now - last_debounce_1) > DEBOUNCE_DELAY)
+//    {
+//      last_debounce_1 = now;
+      if (HAL_GPIO_ReadPin(lim_switch_1_GPIO_Port, lim_switch_1_Pin) == GPIO_PIN_SET){
+        stepper_x_stop = 1;
+        __DSB();
+//      }
+    }
+  }
+  else if (GPIO_Pin == lim_switch_2_Pin)
+  {
+//    if ((now - last_debounce_2) > DEBOUNCE_DELAY)
+//    {
+//      last_debounce_2 = now;
+      if (HAL_GPIO_ReadPin(lim_switch_2_GPIO_Port, lim_switch_2_Pin) == GPIO_PIN_SET){
+        stepper_y_stop = 1;
+        __DSB();
+      }
+//    }
+  }
+}
+
 
 /* USER CODE END 4 */
 

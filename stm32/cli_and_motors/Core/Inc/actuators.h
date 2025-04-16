@@ -7,6 +7,8 @@ extern "C" {
 
 void vServoControl (void);
 
+void vServoControl2 (void);
+
 void vLinServoControl (void);
 
 void vLinActControl (void);

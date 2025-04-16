@@ -17,6 +17,20 @@ void vServoControl (void){
     }
 }
 
+void vServoControl2 (void){
+    uint32_t angle;
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+    for (;;)
+    {
+        xTaskNotifyWait(pdFALSE,    // Don't clear bits on entry
+            0,  // Clear all bits on exit
+            &angle, // Receives the notification value
+            portMAX_DELAY); // Wait indefinitely
+        uint32_t pulse = 1000 + ((angle * 1000)/180);
+	    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pulse);
+    }
+}
+
 void vLinServoControl (void){
     uint32_t pctg;
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
