@@ -65,34 +65,38 @@ def detect(img):
     original = img.copy()
 
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    glare_mask = cv2.inRange(hsv[:, :, 2], 200, 255)  # Detect bright spots
+    hsv[:, :, 2] = cv2.bitwise_and(
+        hsv[:, :, 2], hsv[:, :, 2], mask=cv2.bitwise_not(glare_mask))
+    hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])  # Equalize brightness
 
-    lower_strawberry1 = np.array([0, 100, 80])
-    upper_strawberry1 = np.array([10, 255, 255])
-    lower_strawberry2 = np.array([160, 100, 80])
-    upper_strawberry2 = np.array([179, 255, 255])
+    # lower_strawberry1 = np.array([0, 100, 80])
+    # upper_strawberry1 = np.array([10, 255, 255])
+    # lower_strawberry2 = np.array([160, 100, 80])
+    # upper_strawberry2 = np.array([179, 255, 255])
 
     lower_blackberry = np.array([120, 50, 0])
     upper_blackberry = np.array([180, 255, 80])
 
-    mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
-    mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
-    mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
+    # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
+    # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
+    # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
 
     mask_blackberry = cv2.inRange(hsv, lower_blackberry, upper_blackberry)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    mask_strawberry = cv2.morphologyEx(
-        mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
+    # mask_strawberry = cv2.morphologyEx(
+    #     mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
     mask_blackberry = cv2.morphologyEx(
         mask_blackberry, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    contours_strawberry, _ = cv2.findContours(
-        mask_strawberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # contours_strawberry, _ = cv2.findContours(
+    #     mask_strawberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours_blackberry, _ = cv2.findContours(
         mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    valid_strawberry_contours = contour_check(
-        original, contours_strawberry, 650, 0.5)
+    # valid_strawberry_contours = contour_check(
+    #     original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
         original, contours_blackberry, 150, 0.3)
 
@@ -108,9 +112,13 @@ def detect(img):
             largest_point = (x + w // 2, y + h // 2)
 
     # Display the results
-    cv2.imshow("Detected Fruits", original)
-    cv2.imshow("Blackberry Mask", mask_blackberry)
-    cv2.waitKey(1)
+    try:
+        cv2.imshow("Detected Fruits", original)
+        cv2.imshow("Blackberry Mask", mask_blackberry)
+        cv2.waitKey(1)
+    except Exception as e:
+        # if we run without monitors
+        cv2.destroyAllWindows()
 
     return largest_point
     # return mid_points
