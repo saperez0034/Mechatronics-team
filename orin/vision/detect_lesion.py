@@ -66,10 +66,8 @@ def detect_stable_location(pipeline):
 def detect(img):
     original = img.copy()
 
-    blurred = cv2.GaussianBlur(img, (5, 5), 0)
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-    lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
-
+    # blurred = cv2.GaussianBlur(img, (5, 5), 0)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # lower_strawberry1 = np.array([0, 100, 80])
     # upper_strawberry1 = np.array([10, 255, 255])
     # lower_strawberry2 = np.array([160, 100, 80])
@@ -77,18 +75,13 @@ def detect(img):
 
     lower_blackberry_hsv = np.array([110, 30, 0])
     upper_blackberry_hsv = np.array([180, 255, 80])
-    lower_blackberry_lab = np.array([20, 120, 120])
-    upper_blackberry_lab = np.array([255, 150, 140])
 
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
     # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
 
-    mask_blackberry_hsv = cv2.inRange(
+    mask_blackberry = cv2.inRange(
         hsv, lower_blackberry_hsv, upper_blackberry_hsv)
-    mask_blackberry_lab = cv2.inRange(
-        hsv, lower_blackberry_lab, upper_blackberry_lab)
-    mask_blackberry = cv2.bitwise_or(mask_blackberry_hsv, mask_blackberry_lab)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     # mask_strawberry = cv2.morphologyEx(
@@ -177,7 +170,7 @@ def get_color_image(pipeline):
     depth_frame = frames.get_depth_frame()
     color_image = np.asanyarray(color_frame.get_data())
     depth_image = np.asanyarray(depth_frame.get_data())
-    depth_mask = (depth_image >= 360) & (depth_image <= 450)
+    depth_mask = (depth_image >= 380) & (depth_image <= 450)
     depth_mask = depth_mask.astype(np.uint8) * 255
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     smooth_mask = cv2.morphologyEx(
