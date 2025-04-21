@@ -73,9 +73,10 @@ def detect(img):
     # lower_strawberry2 = np.array([160, 100, 80])
     # upper_strawberry2 = np.array([179, 255, 255])
 
-    lower_blackberry_hsv = np.array([110, 30, 0])
-    upper_blackberry_hsv = np.array([180, 255, 80])
-
+    # lower_blackberry_hsv = np.array([120, 50, 0])
+    # upper_blackberry_hsv = np.array([180, 255, 80])
+    lower_blackberry_hsv = np.array([120, 50, 0])
+    upper_blackberry_hsv = np.array([200, 255, 110])
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
     # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
@@ -97,7 +98,7 @@ def detect(img):
     # valid_strawberry_contours = contour_check(
     #     original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 175, 0.5)
+        original, contours_blackberry, 150, 0.3)
 
     largest_area = 0
     largest_point = (-1, -1)
@@ -170,13 +171,14 @@ def get_color_image(pipeline):
     depth_frame = frames.get_depth_frame()
     color_image = np.asanyarray(color_frame.get_data())
     depth_image = np.asanyarray(depth_frame.get_data())
-    depth_mask = (depth_image >= 380) & (depth_image <= 450)
+    depth_mask = (depth_image <= 450)
     depth_mask = depth_mask.astype(np.uint8) * 255
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     smooth_mask = cv2.morphologyEx(
         depth_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
     filtered_color_image = cv2.bitwise_and(
         color_image, color_image, mask=smooth_mask)
+    filtered_color_image[smooth_mask==0] = [255,255,255]
     return filtered_color_image
 
 
