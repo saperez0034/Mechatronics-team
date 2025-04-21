@@ -164,7 +164,7 @@ class StateMachine:
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_servo(35)
+        self.lin_servo(38)
         time.sleep(1.5)
         self.lin_act(1)
         time.sleep(1)
