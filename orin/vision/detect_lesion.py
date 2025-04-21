@@ -44,7 +44,7 @@ def contour_check(img, contours, min_area, circularity_threshold):
 
 
 def same_location(location1, location2):
-    TOLERANCE = 15
+    TOLERANCE = 10
 
     return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE
 
@@ -54,11 +54,11 @@ def detect_stable_location(pipeline):
     location1 = detect(img1)
     location2 = (-1, -1)
     if location1 != (-1, -1):
-        time.sleep(0.1)
+        time.sleep(1.8)
         img2 = get_color_image(pipeline)
         location2 = detect(img2)
     if same_location(location1, location2):
-        return location1
+        return location2
     else:
         return (-1, -1)
 
@@ -75,7 +75,7 @@ def detect(img):
 
     # lower_blackberry_hsv = np.array([120, 50, 0])
     # upper_blackberry_hsv = np.array([180, 255, 80])
-    lower_blackberry_hsv = np.array([120, 50, 0])
+    lower_blackberry_hsv = np.array([100, 50, 0])
     upper_blackberry_hsv = np.array([200, 255, 110])
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)

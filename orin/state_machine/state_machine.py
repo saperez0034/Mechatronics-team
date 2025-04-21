@@ -17,7 +17,7 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 305
+        self.needle_x = 300
         self.needle_y = 325
         self.pid_error_x = 0
         self.pid_error_y = 0
@@ -96,7 +96,7 @@ class StateMachine:
             self.current_state = 'PROCESSING'
 
     def processing_state(self):
-        ERROR_LIM = 7
+        ERROR_LIM = 8
         print("Processing state")
         self.step_x, self.pid_error_x, self.i_x = pid_controller(
             self.needle_x, self.stable_location[0], self.kp, self.ki,
@@ -143,7 +143,7 @@ class StateMachine:
             while (self.stable_location == (-1, -1)):
                 self.stable_location = detect_lesion.detect_stable_location(self.pipeline)
                 counter += 1
-                if counter == 100:
+                if counter == 1000:
                     self.current_state = 'DETECTING'
                     self.pid_error_x = 0
                     self.pid_error_y = 0
