@@ -175,11 +175,14 @@ def get_color_image(pipeline):
     color_frame = frames.get_color_frame()
     depth_frame = frames.get_depth_frame()
     color_image = np.asanyarray(color_frame.get_data())
-    depth_image = np.asanyarray(depth_frame.get_data())
-    depth_mask = (depth_image >= 350) & (depth_image <= 407)
-    filtered_color_image = np.zeros_like(color_image)
-    filtered_color_image[depth_mask] = color_image[depth_mask]
-    return filtered_color_image
+    if not depth_frame:
+        depth_image = np.asanyarray(depth_frame.get_data())
+        depth_mask = (depth_image >= 350) & (depth_image <= 407)
+        filtered_color_image = np.zeros_like(color_image)
+        filtered_color_image[depth_mask] = color_image[depth_mask]
+        return filtered_color_image
+    else:
+        return color_image
 
 
 if __name__ == "__main__":
