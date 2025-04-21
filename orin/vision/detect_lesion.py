@@ -178,8 +178,12 @@ def get_color_image(pipeline):
     color_image = np.asanyarray(color_frame.get_data())
     depth_image = np.asanyarray(depth_frame.get_data())
     depth_mask = (depth_image >= 360) & (depth_image <= 450)
-    filtered_color_image = np.zeros_like(color_image)
-    filtered_color_image[depth_mask] = color_image[depth_mask]
+    depth_mask = depth_mask.astype(np.uint8) * 255
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    smooth_mask = cv2.morphologyEx(
+        depth_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    filtered_color_image = cv2.bitwise_and(
+        color_image, color_image, mask=smooth_mask)
     return filtered_color_image
 
 
