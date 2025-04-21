@@ -52,7 +52,7 @@ def detect_stable_location(pipeline):
     location1 = detect(img1)
     location2 = (-1, -1)
     if location1 != (-1, -1):
-        time.sleep(1.1)
+        time.sleep(0.3)
         img2 = get_color_image(pipeline)
         location2 = detect(img2)
     if same_location(location1, location2):
@@ -64,27 +64,29 @@ def detect_stable_location(pipeline):
 def detect(img):
     original = img.copy()
 
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    glare_mask = cv2.inRange(hsv[:, :, 2], 200, 255)  # Detect bright spots
-    hsv[:, :, 2] = cv2.bitwise_and(
-        hsv[:, :, 2], hsv[:, :, 2], mask=cv2.bitwise_not(glare_mask))
-    hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])  # Equalize brightness
+    blurred = cv2.GaussianBlur(img, (5,5), 0)
+    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
 
     # lower_strawberry1 = np.array([0, 100, 80])
     # upper_strawberry1 = np.array([10, 255, 255])
     # lower_strawberry2 = np.array([160, 100, 80])
     # upper_strawberry2 = np.array([179, 255, 255])
 
-    lower_blackberry = np.array([120, 50, 0])
-    upper_blackberry = np.array([180, 255, 80])
+    lower_blackberry_hsv = np.array([110, 30, 0])
+    upper_blackberry_hsv = np.array([180, 255, 80])
+    lower_blackberry_lab = np.array([20, 120, 120])
+    upper_blackberry_lab = np.array([255, 150, 140])
 
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
     # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
+    
+    mask_blackberry_hsv = cv2.inRange(hsv, lower_blackberry_hsv, upper_blackberry_hsv)
+    mask_blackberry_lab = cv2.inRange(hsv, lower_blackberry_lab, upper_blackberry_lab)
+    mask_blackberry = cv2.bitwise_or(mask_blackberry_hsv, mask_blackberry_lab)
 
-    mask_blackberry = cv2.inRange(hsv, lower_blackberry, upper_blackberry)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     # mask_strawberry = cv2.morphologyEx(
     #     mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
     mask_blackberry = cv2.morphologyEx(
@@ -98,7 +100,7 @@ def detect(img):
     # valid_strawberry_contours = contour_check(
     #     original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 150, 0.3)
+        original, contours_blackberry, 175, 0.5)
 
     largest_area = 0
     largest_point = (-1, -1)
@@ -111,6 +113,20 @@ def detect(img):
             x, y, w, h = cv2.boundingRect(cnt)
             largest_point = (x + w // 2, y + h // 2)
 
+    # darkest_intensity = 255
+    # darkest_point = (-1, -1)
+    # for cnt in valid_blackberry_contours:
+    #     mask = np.zeros(original.shape[:2], dtype = np.uint8)
+    #     cv2.drawContours(mask, [cnt], -1, -255, -1)
+    #     mean_val = cv2.mean(blurred, mask=mask)
+    #     intensity = mean_val[0]
+
+    #     if intensity < darkest_intensity:
+    #         darkest_intensity = intensity
+    #         x, y, w, h = cv2.boundingRect(cnt)
+    #         darkest_point = (x + w // 2, y + h // 2)
+    
+
     # Display the results
     try:
         cv2.imshow("Detected Fruits", original)
@@ -121,6 +137,7 @@ def detect(img):
         cv2.destroyAllWindows()
 
     return largest_point
+    # return darkest_point
     # return mid_points
 
 

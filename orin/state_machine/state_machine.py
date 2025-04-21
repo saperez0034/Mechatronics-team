@@ -18,7 +18,7 @@ class StateMachine:
         self.pipeline = None
         self.ser = None
         self.needle_x = 290
-        self.needle_y = 280
+        self.needle_y = 320
         self.pid_error_x = 0
         self.pid_error_y = 0
         self.kp = 1
@@ -31,7 +31,7 @@ class StateMachine:
         self.step_y = 0
         self.y_dir = True
         self.x_dir = True
-        self.xy_limit = 4800
+        self.xy_limit = 4500
         self.total_steps_x = 0
         self.total_steps_y = 0
         self.stepperX_midpoint_steps = 100
@@ -61,10 +61,12 @@ class StateMachine:
         self.move_y(-5000)
         time.sleep(5)
         self.lin_servo(90)
+        self.move_y(1000)
+        self.total_steps_y = 1000
         time.sleep(1)
         self.lin_servo(0)  # Moving end effector to the top
         time.sleep(2)
-        self.lin_act(0)
+        self.lin_act(1)
         time.sleep(1)
 
         # self.move_x(self.stepperX_midpoint_steps)
@@ -83,11 +85,10 @@ class StateMachine:
             self.total_steps_x += (100 if self.x_dir else -100)
             if self.total_steps_x >= self.xy_limit or self.total_steps_x <= 0:
                 self.x_dir = not self.x_dir
-                self.move_y(1000 if self.y_dir else -1000)
-                self.total_steps_y += (1000 if self.y_dir else -1000)
+                self.move_y(900 if self.y_dir else -900)
+                self.total_steps_y += (900 if self.y_dir else -900)
                 self.y_dir = not self.y_dir if self.y_dir >= self.xy_limit or self.y_dir <= 0 else self.y_dir
                 time.sleep(2)
-            print(self.total_steps_x)
             self.current_state = 'DETECTING'
         else:
             # self.lesion_midpoint = result[0][3]
@@ -96,38 +97,44 @@ class StateMachine:
             self.current_state = 'PROCESSING'
 
     def processing_state(self):
+        ERROR_LIM = 7
         print("Processing state")
-        if (self.pid_error_x >= 0.75 or self.pid_error_x == 0):
-            self.step_x, self.pid_error_x, self.i_x = pid_controller(
-                self.needle_x, self.stable_location[0], self.kp, self.ki,
-                self.kd, self.pid_error_x, self.i_x, self.dt)
+        self.step_x, self.pid_error_x, self.i_x = pid_controller(
+            self.needle_x, self.stable_location[0], self.kp, self.ki,
+            self.kd, self.pid_error_x, self.i_x, self.dt)
+        print(self.pid_error_x)
+        if (abs(self.pid_error_x) >= ERROR_LIM or self.pid_error_x == 0):
             if (self.step_x + self.total_steps_y >= self.xy_limit):
                 self.step_x = self.xy_limit - self.total_steps_y
+                self.y_dir = not self.x_dir
                 print("error in y high lim")
             if (self.step_x + self.total_steps_y <= 0):
                 self.step_x = -1 * self.total_steps_y
+                self.y_dir = not self.x_dir
                 print("error in y low lim")
             print("move y: "+ str(self.step_x))
             self.move_y(self.step_x)
             self.total_steps_y += self.step_x
-        if (self.pid_error_y >= 0.75 or self.pid_error_y == 0):
-            self.step_y, self.pid_error_y, self.i_y = pid_controller(
-                self.needle_y, self.stable_location[1], self.kp, self.ki,
-                self.kd, self.pid_error_y, self.i_y, self.dt)
+    
+        self.step_y, self.pid_error_y, self.i_y = pid_controller(
+            self.needle_y, self.stable_location[1], self.kp, self.ki,
+            self.kd, self.pid_error_y, self.i_y, self.dt)
+        print(self.pid_error_y)
+        if (abs(self.pid_error_y) >= ERROR_LIM or self.pid_error_y == 0):
             if (self.step_y + self.total_steps_x >= self.xy_limit):
                 self.step_y = self.xy_limit - self.total_steps_x
+                self.x_dir = not self.y_dir
                 print("error in x high lim")
             if (self.step_y + self.total_steps_x <= 0):
                 self.step_y = -1 * self.total_steps_x
+                self.x_dir = not self.y_dir
                 print("error in x low lim")
             print("move x: "+ str(self.step_y))
             self.move_x(self.step_y)
             self.total_steps_x += self.step_y
-        # self.move_x(5 * (self.needle_y - self.stable_location[1]))
-        # self.move_y(5 * (self.needle_x - self.stable_location[0]))
         time.sleep(1.5)
 
-        if(self.pid_error_x < 1 and self.pid_error_y < 1):
+        if(abs(self.pid_error_x) < ERROR_LIM and abs(self.pid_error_y) < ERROR_LIM):
             print(self.stable_location)
             self.current_state = 'BREATHING'
             print("Breathing")
@@ -137,7 +144,7 @@ class StateMachine:
             while (self.stable_location == (-1, -1)):
                 self.stable_location = detect_lesion.detect_stable_location(self.pipeline)
                 counter += 1
-                if counter == 20:
+                if counter == 100:
                     self.current_state = 'DETECTING'
                     self.pid_error_x = 0
                     self.pid_error_y = 0
@@ -146,8 +153,9 @@ class StateMachine:
                 pass
 
     def breathing_state(self):
-        self.lin_servo(50)
-        time.sleep(5)
+        self.lin_servo(25)
+        self.lin_act(0)
+        time.sleep(2)
         img = detect_lesion.get_color_image(self.pipeline)
         result = detect_lesion.detect(img)
         if detect_lesion.same_location(result, self.stable_location) != (-1, -1):
@@ -157,10 +165,10 @@ class StateMachine:
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_servo(80)
-        time.sleep(2.5)
+        self.lin_servo(37)
+        time.sleep(1.5)
         self.lin_act(1)
-        time.sleep(0.5)
+        time.sleep(1)
         self.lin_servo(0)
         time.sleep(2)
         self.move_x(-self.total_steps_x)
