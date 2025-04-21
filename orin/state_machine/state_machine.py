@@ -17,8 +17,8 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 290
-        self.needle_y = 320
+        self.needle_x = 305
+        self.needle_y = 325
         self.pid_error_x = 0
         self.pid_error_y = 0
         self.kp = 1
@@ -62,15 +62,14 @@ class StateMachine:
         time.sleep(5)
         self.lin_servo(90)
         self.move_y(2700)
-        self.total_steps_y =2700
-        time.sleep(3)
+        self.total_steps_y = 2700
+        self.move_x(1000)
+        self.total_steps_x = 1000
+        time.sleep(5)
         self.lin_servo(0)  # Moving end effector to the top
         time.sleep(2)
         self.lin_act(1)
         time.sleep(1)
-
-        # self.move_x(self.stepperX_midpoint_steps)
-        # self.total_steps_x += self.stepperX_midpoint_steps
 
         self.current_state = 'DETECTING'
         print("Detecting state")
@@ -165,7 +164,7 @@ class StateMachine:
 
     def extract_sample_state(self):
         print("Extracting sample state")
-        self.lin_servo(37)
+        self.lin_servo(35)
         time.sleep(1.5)
         self.lin_act(1)
         time.sleep(1)

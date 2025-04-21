@@ -54,7 +54,7 @@ def detect_stable_location(pipeline):
     location1 = detect(img1)
     location2 = (-1, -1)
     if location1 != (-1, -1):
-        time.sleep(0.3)
+        time.sleep(0.1)
         img2 = get_color_image(pipeline)
         location2 = detect(img2)
     if same_location(location1, location2):
