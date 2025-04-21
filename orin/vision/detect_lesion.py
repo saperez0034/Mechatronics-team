@@ -1,7 +1,9 @@
 import cv2
 try:
     import pyrealsense2 as rs
+    realSense = True
 except ImportError:
+    realSense = False
     print("pyrealsense2 not found. Make sure to install the RealSense SDK.")
 import numpy as np
 import time
@@ -64,7 +66,7 @@ def detect_stable_location(pipeline):
 def detect(img):
     original = img.copy()
 
-    blurred = cv2.GaussianBlur(img, (5,5), 0)
+    blurred = cv2.GaussianBlur(img, (5, 5), 0)
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
     lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
 
@@ -81,9 +83,11 @@ def detect(img):
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
     # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
-    
-    mask_blackberry_hsv = cv2.inRange(hsv, lower_blackberry_hsv, upper_blackberry_hsv)
-    mask_blackberry_lab = cv2.inRange(hsv, lower_blackberry_lab, upper_blackberry_lab)
+
+    mask_blackberry_hsv = cv2.inRange(
+        hsv, lower_blackberry_hsv, upper_blackberry_hsv)
+    mask_blackberry_lab = cv2.inRange(
+        hsv, lower_blackberry_lab, upper_blackberry_lab)
     mask_blackberry = cv2.bitwise_or(mask_blackberry_hsv, mask_blackberry_lab)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
@@ -125,7 +129,6 @@ def detect(img):
     #         darkest_intensity = intensity
     #         x, y, w, h = cv2.boundingRect(cnt)
     #         darkest_point = (x + w // 2, y + h // 2)
-    
 
     # Display the results
     try:
@@ -170,8 +173,13 @@ def vision_setup():
 def get_color_image(pipeline):
     frames = pipeline.wait_for_frames()
     color_frame = frames.get_color_frame()
+    depth_frame = frames.get_depth_frame()
     color_image = np.asanyarray(color_frame.get_data())
-    return color_image
+    depth_image = np.asanyarray(depth_frame.get_data())
+    depth_mask = (depth_image >= 350) & (depth_image <= 407)
+    filtered_color_image = np.zeros_like(color_image)
+    filtered_color_image[depth_mask] = color_image[depth_mask]
+    return filtered_color_image
 
 
 if __name__ == "__main__":
