@@ -17,8 +17,8 @@ class StateMachine:
         self.current_state = 'INITIAL'
         self.pipeline = None
         self.ser = None
-        self.needle_x = 300
-        self.needle_y = 325
+        self.needle_x = 334 #y axis irl
+        self.needle_y = 323 #x axis irl
         self.pid_error_x = 0
         self.pid_error_y = 0
         self.kp = 1
@@ -61,15 +61,14 @@ class StateMachine:
         self.move_y(-5000)
         time.sleep(5)
         self.lin_servo(90)
+        time.sleep(1)
+        self.lin_servo(0)  # Moving end effector to the top
+        self.lin_act(1)
         self.move_y(2700)
         self.total_steps_y = 2700
         self.move_x(1000)
         self.total_steps_x = 1000
         time.sleep(5)
-        self.lin_servo(0)  # Moving end effector to the top
-        time.sleep(2)
-        self.lin_act(1)
-        time.sleep(1)
 
         self.current_state = 'DETECTING'
         print("Detecting state")
@@ -86,7 +85,7 @@ class StateMachine:
                 self.x_dir = not self.x_dir
                 self.move_y(900 if self.y_dir else -900)
                 self.total_steps_y += (900 if self.y_dir else -900)
-                self.y_dir = not self.y_dir if self.y_dir >= self.xy_limit or self.y_dir <= 0 else self.y_dir
+                self.y_dir = not self.y_dir if self.total_steps_y >= self.xy_limit or self.y_dir <= 0 else self.y_dir
                 time.sleep(2)
             self.current_state = 'DETECTING'
         else:
@@ -96,12 +95,12 @@ class StateMachine:
             self.current_state = 'PROCESSING'
 
     def processing_state(self):
-        ERROR_LIM = 8
+        ERROR_LIM = 7
         print("Processing state")
         self.step_x, self.pid_error_x, self.i_x = pid_controller(
             self.needle_x, self.stable_location[0], self.kp, self.ki,
             self.kd, self.pid_error_x, self.i_x, self.dt)
-        print(self.pid_error_x)
+        print(f"y error:{self.pid_error_x}")
         if (abs(self.pid_error_x) >= ERROR_LIM or self.pid_error_x == 0):
             if (self.step_x + self.total_steps_y >= self.xy_limit):
                 self.step_x = self.xy_limit - self.total_steps_y
@@ -118,7 +117,7 @@ class StateMachine:
         self.step_y, self.pid_error_y, self.i_y = pid_controller(
             self.needle_y, self.stable_location[1], self.kp, self.ki,
             self.kd, self.pid_error_y, self.i_y, self.dt)
-        print(self.pid_error_y)
+        print(f"x error:{self.pid_error_y}")
         if (abs(self.pid_error_y) >= ERROR_LIM or self.pid_error_y == 0):
             if (self.step_y + self.total_steps_x >= self.xy_limit):
                 self.step_y = self.xy_limit - self.total_steps_x

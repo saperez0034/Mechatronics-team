@@ -98,7 +98,7 @@ def detect(img):
     # valid_strawberry_contours = contour_check(
     #     original, contours_strawberry, 650, 0.5)
     valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 150, 0.3)
+        original, contours_blackberry, 150, 0.5)
 
     largest_area = 0
     largest_point = (-1, -1)
@@ -172,10 +172,16 @@ def get_color_image(pipeline):
     color_image = np.asanyarray(color_frame.get_data())
     depth_image = np.asanyarray(depth_frame.get_data())
     depth_mask = (depth_image <= 450)
-    depth_mask = depth_mask.astype(np.uint8) * 255
+    # depth_mask = depth_mask.astype(np.uint8) * 255
+    x_mask = np.zeros_like(depth_mask, dtype=bool)
+    x_mask[:,:65] = True
+    y_mask = np.zeros_like(depth_mask, dtype=bool)
+    y_mask[430:,:] = True
+    combined_mask = depth_mask & ~x_mask & ~y_mask
+    combined_mask = combined_mask.astype(np.uint8) * 255
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     smooth_mask = cv2.morphologyEx(
-        depth_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+        combined_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
     filtered_color_image = cv2.bitwise_and(
         color_image, color_image, mask=smooth_mask)
     filtered_color_image[smooth_mask==0] = [255,255,255]
