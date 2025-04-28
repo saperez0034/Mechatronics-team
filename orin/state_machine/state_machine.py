@@ -64,8 +64,8 @@ class StateMachine:
         time.sleep(1)
         self.lin_servo(0)  # Moving end effector to the top
         self.lin_act(1)
-        self.move_y(2700)
-        self.total_steps_y = 2700
+        self.move_y(3100)
+        self.total_steps_y = 3100
         self.move_x(1000)
         self.total_steps_x = 1000
         time.sleep(5)

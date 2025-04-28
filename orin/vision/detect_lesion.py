@@ -8,7 +8,11 @@ except ImportError:
 import numpy as np
 import time
 from math import pi
+import torch
+from ultralytics import YOLO
 
+model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best.pt', verbose=False)
+model.eval()
 
 def draw_target(img, x, y, w, h):
     cv2.line(
@@ -48,15 +52,35 @@ def same_location(location1, location2):
 
     return abs(location2[0] - location1[0]) <= TOLERANCE and abs(location2[1] - location1[1]) <= TOLERANCE
 
+def get_blackberry_midpoint(detections):
+    # location1 = results[0].boxes.xywh
+    # location1 = location1[0].cpu().numpy().tolist()
+    # conf = results[0].boxes.conf.cpu().numpy().tolist()
+    # results[0].show()
+    # detections = detections.cpu().numpy().tolist()
+    for i in range(len(detections.boxes)):
+        confidence = detections.boxes.conf[i].cpu().item()  # Get the confidence score
+        if confidence > 0.4:  # Check if confidence is above the threshold
+            x = int(detections.boxes.xywh[i][0])  # x-center
+            y = int(detections.boxes.xywh[i][1])  # y-center
+            w = int(detections.boxes.xywh[i][2])  # width
+            h = int(detections.boxes.xywh[i][3])  # height
+            # print(f"Detection {i}: Confidence={confidence}, BBox=({x}, {y}, {w}, {h})")
+            return (x + w // 2, y + h // 2)  # Return the midpoint of the first valid detection
+    return (-1, -1)
 
 def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
-    location1 = detect(img1)
+    results = model(img1)
+    location1 = get_blackberry_midpoint(results[0])
+    results[0].show()
     location2 = (-1, -1)
     if location1 != (-1, -1):
-        time.sleep(1.8)
+        time.sleep(0.3)
         img2 = get_color_image(pipeline)
-        location2 = detect(img2)
+        results = model(img2)
+        location2 = get_blackberry_midpoint(results[0])
+        # location2 = detect(img2)
     if same_location(location1, location2):
         return location2
     else:
@@ -185,7 +209,7 @@ def get_color_image(pipeline):
     filtered_color_image = cv2.bitwise_and(
         color_image, color_image, mask=smooth_mask)
     filtered_color_image[smooth_mask==0] = [255,255,255]
-    return filtered_color_image
+    return color_image
 
 
 if __name__ == "__main__":
