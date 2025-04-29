@@ -11,8 +11,8 @@ from math import pi
 import torch
 from ultralytics import YOLO
 
-model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best_v2.pt', verbose=False)
-model.eval()
+# model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best_v2.pt', verbose=False)
+# model.eval()
 
 def draw_target(img, x, y, w, h):
     cv2.line(
@@ -60,7 +60,7 @@ def get_blackberry_midpoint(detections):
     # detections = detections.cpu().numpy().tolist()
     for i in range(len(detections.boxes)):
         confidence = detections.boxes.conf[i].cpu().item()  # Get the confidence score
-        if confidence > 0.4:  # Check if confidence is above the threshold
+        if confidence > 0.5:  # Check if confidence is above the threshold
             x = int(detections.boxes.xywh[i][0])  # x-center
             y = int(detections.boxes.xywh[i][1])  # y-center
             w = int(detections.boxes.xywh[i][2])  # width
@@ -71,20 +71,25 @@ def get_blackberry_midpoint(detections):
 
 def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
-    results = model(img1)
-    location1 = get_blackberry_midpoint(results[0])
-    results[0].show()
+    # results = model(img1)
+    # results[0].show()
+    # print(results[0].boxes.conf.cpu().numpy().tolist())
+    # if (results[0].boxes.conf.cpu().numpy().tolist() != []):
+    #     if results[0].boxes.conf.cpu().numpy().tolist()[0] > 0.5:
+    # location1 = detect(results[0])
+    location1 = detect(img1)
     location2 = (-1, -1)
     if location1 != (-1, -1):
         time.sleep(0.3)
         img2 = get_color_image(pipeline)
-        results = model(img2)
-        location2 = get_blackberry_midpoint(results[0])
-        # location2 = detect(img2)
+        # results = model(img2)
+        # location2 = detect(results[0])
+        location2 = detect(img2)
     if same_location(location1, location2):
         return location2
     else:
         return (-1, -1)
+    # return (-1, -1)
 
 
 def detect(img):
@@ -99,36 +104,40 @@ def detect(img):
 
     # lower_blackberry_hsv = np.array([120, 50, 0])
     # upper_blackberry_hsv = np.array([180, 255, 80])
-    lower_blackberry_hsv = np.array([100, 50, 0])
-    upper_blackberry_hsv = np.array([200, 255, 110])
+    lower_strawberry_hsv = np.array([0, 100, 80])
+    upper_strawberry_hsv = np.array([10, 255, 255])
+    # lower_blackberry_hsv = np.array([100, 50, 0])
+    # upper_blackberry_hsv = np.array([200, 255, 110])
     # mask_strawberry1 = cv2.inRange(hsv, lower_strawberry1, upper_strawberry1)
     # mask_strawberry2 = cv2.inRange(hsv, lower_strawberry2, upper_strawberry2)
     # mask_strawberry = cv2.bitwise_or(mask_strawberry1, mask_strawberry2)
 
-    mask_blackberry = cv2.inRange(
-        hsv, lower_blackberry_hsv, upper_blackberry_hsv)
+    mask_strawberry = cv2.inRange(
+        hsv, lower_strawberry_hsv, upper_strawberry_hsv)
+    # mask_blackberry = cv2.inRange(
+    #     hsv, lower_blackberry_hsv, upper_blackberry_hsv)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    # mask_strawberry = cv2.morphologyEx(
-    #     mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
-    mask_blackberry = cv2.morphologyEx(
-        mask_blackberry, cv2.MORPH_CLOSE, kernel, iterations=2)
+    mask_strawberry = cv2.morphologyEx(
+        mask_strawberry, cv2.MORPH_CLOSE, kernel, iterations=2)
+    # mask_blackberry = cv2.morphologyEx(
+    #     mask_blackberry, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    # contours_strawberry, _ = cv2.findContours(
-    #     mask_strawberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contours_blackberry, _ = cv2.findContours(
-        mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_strawberry, _ = cv2.findContours(
+        mask_strawberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # contours_blackberry, _ = cv2.findContours(
+    #     mask_blackberry, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # valid_strawberry_contours = contour_check(
-    #     original, contours_strawberry, 650, 0.5)
-    valid_blackberry_contours = contour_check(
-        original, contours_blackberry, 150, 0.5)
+    valid_strawberry_contours = contour_check(
+        original, contours_strawberry, 650, 0.5)
+    # valid_blackberry_contours = contour_check(
+        # original, contours_blackberry, 150, 0.5)
 
     largest_area = 0
     largest_point = (-1, -1)
     # mid_points.extend(midpoints_strawberry)
     # mid_points.extend(midpoints_blackberry)
-    for cnt in valid_blackberry_contours:
+    for cnt in valid_strawberry_contours:
         area = cv2.contourArea(cnt)
         if area > largest_area:
             largest_area = area
@@ -151,7 +160,7 @@ def detect(img):
     # Display the results
     try:
         cv2.imshow("Detected Fruits", original)
-        cv2.imshow("Blackberry Mask", mask_blackberry)
+        cv2.imshow("Blackberry Mask", mask_strawberry)
         cv2.waitKey(1)
     except Exception as e:
         # if we run without monitors
@@ -209,7 +218,7 @@ def get_color_image(pipeline):
     filtered_color_image = cv2.bitwise_and(
         color_image, color_image, mask=smooth_mask)
     filtered_color_image[smooth_mask==0] = [255,255,255]
-    return color_image
+    return filtered_color_image
 
 
 if __name__ == "__main__":
