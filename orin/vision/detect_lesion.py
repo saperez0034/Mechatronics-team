@@ -11,8 +11,8 @@ from math import pi
 import torch
 from ultralytics import YOLO
 
-# model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best_v2.pt', verbose=False)
-# model.eval()
+model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best_strawberry.pt', verbose=False)
+model.eval()
 
 def draw_target(img, x, y, w, h):
     cv2.line(
@@ -72,18 +72,14 @@ def get_blackberry_midpoint(detections):
 def detect_stable_location(pipeline):
     img1 = get_color_image(pipeline)
     # results = model(img1)
-    # results[0].show()
-    # print(results[0].boxes.conf.cpu().numpy().tolist())
-    # if (results[0].boxes.conf.cpu().numpy().tolist() != []):
-    #     if results[0].boxes.conf.cpu().numpy().tolist()[0] > 0.5:
-    # location1 = detect(results[0])
+    # location1 = get_blackberry_midpoint(results[0])
     location1 = detect(img1)
     location2 = (-1, -1)
     if location1 != (-1, -1):
         time.sleep(0.3)
         img2 = get_color_image(pipeline)
         # results = model(img2)
-        # location2 = detect(results[0])
+        # location2 = get_blackberry_midpoint(results[0])
         location2 = detect(img2)
     if same_location(location1, location2):
         return location2
@@ -219,6 +215,7 @@ def get_color_image(pipeline):
         color_image, color_image, mask=smooth_mask)
     filtered_color_image[smooth_mask==0] = [255,255,255]
     return filtered_color_image
+    # return color_image
 
 
 if __name__ == "__main__":
