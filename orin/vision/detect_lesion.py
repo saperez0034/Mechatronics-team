@@ -11,7 +11,7 @@ from math import pi
 import torch
 from ultralytics import YOLO
 
-model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best.pt', verbose=False)
+model = YOLO('/home/orin/capstone/Mechatronics-team/orin/vision/best_v2.pt', verbose=False)
 model.eval()
 
 def draw_target(img, x, y, w, h):
